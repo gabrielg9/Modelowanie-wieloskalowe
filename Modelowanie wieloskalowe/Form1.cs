@@ -408,7 +408,8 @@ namespace Modelowanie_wieloskalowe
                                     licznik = 0;
                                 
                             }
-                            tab1[i, j] = max_wartosc;                       
+                            tab1[i, j] = max_wartosc;
+                            max_wartosc = 0;
                         }
                         else
                             tab1[i, j] = tab[i, j];
@@ -493,6 +494,7 @@ namespace Modelowanie_wieloskalowe
 
                             }
                             tab1[i, j] = max_wartosc;
+                            max_wartosc = 0;
                         }
                         else
                             tab1[i, j] = tab[i, j];

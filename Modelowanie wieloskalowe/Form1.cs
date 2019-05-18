@@ -9,6 +9,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Timers;
+using System.Media;
 
 
 
@@ -18,29 +20,75 @@ namespace Modelowanie_wieloskalowe
     {
 
         int[,] tablica;
-        int licznik = 0;
+        int val = 1;
+        private Graphics g;
         Bitmap DrawArea;
+        int r1, r2;
+        float r1_f, r2_f, size_x, size_y;
+        Siatka s;
+        bool stan_gry;
+        bool button_GOL_click;
+        bool periodyczne;
+        bool absorbujace;
+        bool rozrost_ziaren;
+        SolidBrush blackBrush = new SolidBrush(Color.Black);
+        SolidBrush whiteBrush = new SolidBrush(Color.White);
+        SolidBrush yellowBrush = new SolidBrush(Color.Yellow);
+        SolidBrush brownBrush = new SolidBrush(Color.Brown);
+        SolidBrush blueBrush = new SolidBrush(Color.Blue);
+        SolidBrush greenBrush = new SolidBrush(Color.Green);
+        SolidBrush pinkBrush = new SolidBrush(Color.Pink);
+        SolidBrush colorBrush = new SolidBrush(Color.Aqua);
+        SolidBrush[] solidBrushes;
+
+
         public Form1()
         {
             InitializeComponent();
             InitializeComboBox();
-            DrawArea = new Bitmap(pictureBox1.Size.Width, pictureBox1.Size.Height);
-            //DrawArea = new Bitmap(int.Parse(textBox1.Text), int.Parse(textBox2.Text));
-            pictureBox1.Image = DrawArea;
             
+            DrawArea = new Bitmap(pictureBox1.Size.Width, pictureBox1.Size.Height);
+            g = Graphics.FromImage(DrawArea);
 
+            
 
         }
         
+        private void pobierz_dane()
+        {
+            r1 = int.Parse(textBox1.Text);
+            r2 = int.Parse(textBox2.Text);
+            r1_f = (float)r1;
+            r2_f = (float)r2;
+            size_x = pictureBox1.Size.Width / r1_f;
+            size_y = pictureBox1.Size.Height / r2_f;
+            if (size_x < size_y)
+                size_y = size_x;
+            else
+                size_x = size_y;
+
+            s = new Siatka();
+
+        }
+
+        private void wyznacz_kolory()
+        {
+            Random rand = new Random();
+            int r, g, b;
+            solidBrushes = new SolidBrush[1000];
+            solidBrushes[0] = new SolidBrush(Color.White);
+            for (int i = 1; i < 1000; i++)
+            {
+                r = rand.Next(255);
+                g = rand.Next(255);
+                b = rand.Next(255);
+                solidBrushes[i] = new SolidBrush(Color.FromArgb(r,g,b));
+            }
+        }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            Graphics g;
-            g = Graphics.FromImage(DrawArea);
-            
-
-
-
+  
         }
 
         public class Siatka
@@ -283,11 +331,217 @@ namespace Modelowanie_wieloskalowe
                         }
                     }
                 }
-                MessageBox.Show("");
-                /*if (tab[m - 2, m - 2] == 1)
-                    tab[m - 2, m - 2] = 0;
-                else
-                    tab[m - 2, m - 2] = 1;*/
+                return tab1;
+            }
+
+            public int[,] sprawdz_warunki_brzeogwe_vonNeymana_periodyczne(int[,] tab, int m, int n)
+            {
+                int[,] tab1 = new int[m, n];
+                for (int i = 0; i < m; i++)
+                    for (int j = 0; j < n; j++)
+                        tab1[i, j] = 0;
+
+                int wartosc = 0;
+                int max_wartosc = 0;
+                int licznik = 0;
+                int max_licznik = 0;
+                int[] zbior;
+                zbior = new int[4];
+                for(int i=0; i<m; i++)
+                {
+                    for(int j=0; j<n; j++)
+                    {
+                        wartosc = 0; licznik = 0; max_licznik = 0;
+                        if (tab[i, j] == 0)
+                        {
+                            if (j == 0 & i != 0 && i != m - 1)
+                            {
+                                zbior[0] = tab[i, n - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i, j + 1]; zbior[3] = tab[i + 1, j];
+                            }
+                            else if (j == n - 1 && i != 0 && i != m - 1)
+                            {
+                                zbior[0] = tab[i, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i, 0]; zbior[3] = tab[i + 1, j];
+                            }
+                            else if (i == 0 && j != 0 && j != n - 1)
+                            {
+                                zbior[0] = tab[i, j - 1]; zbior[1] = tab[m - 1, j]; zbior[2] = tab[i, j + 1]; zbior[3] = tab[i + 1, j];
+                            }
+                            else if (i == m - 1 && j != 0 && j != n - 1)
+                            {
+                                zbior[0] = tab[i, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i, j + 1]; zbior[3] = tab[0, j];
+                            }
+                            else if (i == 0 && j == 0)
+                            {
+                                zbior[0] = tab[i, n - 1]; zbior[1] = tab[m - 1, j]; zbior[2] = tab[i, j + 1]; zbior[3] = tab[i + 1, j];
+                            }
+                            else if (i == 0 && j == n - 1)
+                            {
+                                zbior[0] = tab[i, j - 1]; zbior[1] = tab[m - 1, j]; zbior[2] = tab[i, 0]; zbior[3] = tab[i + 1, j];
+                            }
+                            else if (i == m - 1 && j == n - 1)
+                            {
+                                zbior[0] = tab[i, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i, 0]; zbior[3] = tab[0, j];
+                            }
+                            else if (i == m - 1 && j == 0)
+                            {
+                                zbior[0] = tab[i, n - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i, j + 1]; zbior[3] = tab[0, j];
+                            }
+                            else
+                            {
+                                zbior[0] = tab[i, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i, j + 1]; zbior[3] = tab[i + 1, j];
+                            }
+                            for(int l=0;l<4;l++)
+                            {
+                                wartosc = zbior[l];
+                                for (int k = 0; k < 4; k++)
+                                {
+                                    if (wartosc == zbior[k] && zbior[k] != 0)
+                                    {
+                                        licznik++;
+                                    }
+                                }
+                                    if (licznik > max_licznik)
+                                    {
+                                        max_licznik = licznik;
+                                        max_wartosc = wartosc;
+                                    }
+                                    licznik = 0;
+                                
+                            }
+                            tab1[i, j] = max_wartosc;                       
+                        }
+                        else
+                            tab1[i, j] = tab[i, j];
+                    }
+                }
+
+                return tab1;
+            }
+
+            public int[,] sprawdz_warunki_brzeogwe_vonNeymana_absorbujace(int[,] tab, int m, int n)
+            {
+                int[,] tab1 = new int[m, n];
+                for (int i = 0; i < m; i++)
+                    for (int j = 0; j < n; j++)
+                        tab1[i, j] = 0;
+
+                int wartosc = 0;
+                int max_wartosc = 0;
+                int licznik = 0;
+                int max_licznik = 0;
+                int[] zbior;
+                zbior = new int[4];
+                for (int i = 0; i < m; i++)
+                {
+                    for (int j = 0; j < n; j++)
+                    {
+                        wartosc = 0; licznik = 0; max_licznik = 0;
+                        if (tab[i, j] == 0)
+                        {
+                            if (j == 0 & i != 0 && i != m - 1)
+                            {
+                                zbior[0] = 0; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i, j + 1]; zbior[3] = tab[i + 1, j];
+                            }
+                            else if (j == n - 1 && i != 0 && i != m - 1)
+                            {
+                                zbior[0] = tab[i, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = 0; zbior[3] = tab[i + 1, j];
+                            }
+                            else if (i == 0 && j != 0 && j != n - 1)
+                            {
+                                zbior[0] = tab[i, j - 1]; zbior[1] = 0; zbior[2] = tab[i, j + 1]; zbior[3] = tab[i + 1, j];
+                            }
+                            else if (i == m - 1 && j != 0 && j != n - 1)
+                            {
+                                zbior[0] = tab[i, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i, j + 1]; zbior[3] = 0;
+                            }
+                            else if (i == 0 && j == 0)
+                            {
+                                zbior[0] = 0; zbior[1] = 0; zbior[2] = tab[i, j + 1]; zbior[3] = tab[i + 1, j];
+                            }
+                            else if (i == 0 && j == n - 1)
+                            {
+                                zbior[0] = tab[i, j - 1]; zbior[1] = 0; zbior[2] = 0; zbior[3] = tab[i + 1, j];
+                            }
+                            else if (i == m - 1 && j == n - 1)
+                            {
+                                zbior[0] = tab[i, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = 0; zbior[3] = 0;
+                            }
+                            else if (i == m - 1 && j == 0)
+                            {
+                                zbior[0] = 0; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i, j + 1]; zbior[3] = 0;
+                            }
+                            else
+                            {
+                                zbior[0] = tab[i, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i, j + 1]; zbior[3] = tab[i + 1, j];
+                            }
+                            for (int l = 0; l < 4; l++)
+                            {
+                                wartosc = zbior[l];
+                                for (int k = 0; k < 4; k++)
+                                {
+                                    if (wartosc == zbior[k] && zbior[k] != 0)
+                                    {
+                                        licznik++;
+                                    }
+                                }
+                                if (licznik > max_licznik)
+                                {
+                                    max_licznik = licznik;
+                                    max_wartosc = wartosc;
+                                }
+                                licznik = 0;
+
+                            }
+                            tab1[i, j] = max_wartosc;
+                        }
+                        else
+                            tab1[i, j] = tab[i, j];
+                    }
+                }
+
+                return tab1;
+            }
+
+            public int[,] sprawdz_warunki_brzegowe_moor(int[,] tab, int m, int n)
+            {
+                int[,] tab1 = new int[m, n];
+                for (int i = 0; i < m; i++)
+                    for (int j = 0; j < n; j++)
+                        tab1[i, j] = 0;
+
+                int aktualna_wartosc=0;
+                int max_wartosc=0;
+                int licznik = 0;
+                int max_licznik = 0;
+                for(int i=0; i<m; i++)
+                {
+                    for(int j=0; j<n; j++)
+                    {
+                        for(int r=-1; r<2; r++)
+                            for(int t=-1; t<2; t++)
+                            {
+                                licznik = 0;
+                                aktualna_wartosc = tab[i + r, j + t];
+                                max_wartosc = tab[i + r, j + r];
+                                for (int k = -1; k < 2; k++)
+                                {
+                                    for (int l = -1; l < 2; l++)
+                                    {
+                                        if (aktualna_wartosc == tab[i + k, j + l])
+                                            licznik++;
+                                    }
+                                }
+                                if (licznik > max_licznik)
+                                {
+                                    max_licznik = licznik;
+                                    max_wartosc = aktualna_wartosc;
+                                }
+                            }
+                        
+                         tab1[i, j] = max_wartosc;
+                    }
+                }
+
                 return tab1;
             }
         }
@@ -304,6 +558,11 @@ namespace Modelowanie_wieloskalowe
             comboBox2.Items.AddRange(lista2);
             this.Controls.Add(this.comboBox2);
             this.comboBox2.SelectedIndexChanged += new System.EventHandler(comboBox2_SelectedIndexChanged);
+
+            string[] lista3 = new string[] { "Jednorodne", "Z promieniem", "Losowe", "Wyklinanie" };
+            comboBox3.Items.AddRange(lista3);
+            this.Controls.Add(this.comboBox3);
+            this.comboBox3.SelectedIndexChanged += new System.EventHandler(comboBox3_SelectedIndexChanged);
         }
 
 
@@ -314,36 +573,13 @@ namespace Modelowanie_wieloskalowe
 
         private void pictureBox1_Click(object sender, EventArgs e)
         {
+            pobierz_dane();
             Graphics g;
             g = Graphics.FromImage(DrawArea);
-            Color color1 = Color.Black;
-            Color color2 = Color.White;
-            SolidBrush blackBrush = new SolidBrush(color1);
-            SolidBrush whiteBrush = new SolidBrush(color2);
-            Siatka s = new Siatka();
+            
             MouseEventArgs me = (MouseEventArgs)e;
             int x = me.Location.X;
             int y = me.Location.Y;
-
-            int r1 = int.Parse(textBox1.Text);
-            int r2 = int.Parse(textBox2.Text);
-            float r1_f = (float)r1;
-            float r2_f = (float)r2;
-
-            /*int[,] tab = new int[r2, r1];
-            for (int i = 0; i < r2; i++)
-                for (int j = 0; j < r1; j++)
-                    tab[i, j] = 0;*/
-            
-            
-
-            float size_x = (float)pictureBox1.Size.Width / r1_f;
-            float size_y = (float)pictureBox1.Size.Height / r2_f;
-            if (size_x < size_y)
-                size_y = size_x;
-            else
-                size_x = size_y;
-
 
             x = me.Location.X;
             y = me.Location.Y;
@@ -352,202 +588,158 @@ namespace Modelowanie_wieloskalowe
             float i_f = y / size_y;
             int j_i = (int)j_f;
             int i_i = (int)i_f;
-            /*string qwe = j_i.ToString();
-            string qwer = i_i.ToString();
-            MessageBox.Show(qwe);
-            MessageBox.Show(qwer);*/
-            if (tablica[i_i, j_i] == 1)
-                tablica[i_i, j_i] = 0;
-            else
-                tablica[i_i, j_i] = 1;
             
+            
+            if(button_GOL_click)
+            {
+                if (tablica[i_i, j_i] == 1)
+                    tablica[i_i, j_i] = 0;
+                else
+                    tablica[i_i, j_i] = 1;
+                g.Clear(Color.DarkGray);
 
+                for (int i = 0; i < r2; i++)
+                {
+                    for (int j = 0; j < r1; j++)
+                    {
+                        if (tablica[i, j] == 1)
+                            g.FillRectangle(blackBrush, j * size_x, i * size_y, size_x, size_y);
+                        else
+                            g.FillRectangle(whiteBrush, j * size_x, i * size_y, size_x, size_y);
+                    }
+                }
+                pictureBox1.Image = DrawArea;
+
+                /*if (stan_gry)
+                {
+                    Thread th = new Thread(nowy_watek);
+                    th.Start();
+                }*/
+            }
+            else//rozrost ziaren 1
+            {
+                tablica[i_i, j_i] = val;
+                val++;
+                g.Clear(Color.DarkGray);
+
+                for (int i = 0; i < r2; i++)
+                {
+                    for (int j = 0; j < r1; j++)
+                    {
+                        for (int k = 0; k < 1000; k++)
+                            if (tablica[i, j] == k)
+                                g.FillRectangle(solidBrushes[k], j * size_x, i * size_y, size_x, size_y);
+                            
+                    }
+                }
+                pictureBox1.Image = DrawArea;
+                g.Dispose();
+                
+                /*if (rozrost_ziaren)
+                {
+                    Thread th = new Thread(nowy_watek);
+                    th.Start();
+                }*/
+            }
+
+        }
+
+        private void rysuj_automaty_kom(int [,] tab, int opcja)
+        {
+            pobierz_dane();
+            Graphics g;
+            g = Graphics.FromImage(DrawArea);
+
+            MessageBox.Show(size_x.ToString());
+            MessageBox.Show(size_y.ToString());
             
+            switch (opcja)
+            {
+                case 1:
+                    tab = s.metoda30(r2, r1);
+                    break;
+                case 2:
+                    tab = s.metoda60(r2, r1);
+                    break;
+                case 3:
+                    tab = s.metoda90(r2, r1);
+                    break;
+                case 4:
+                    tab = s.metoda120(r2, r1);
+                    break;
+                case 5:
+                    tab = s.metoda225(r2, r1);
+                    break;
+
+            }
             g.Clear(Color.DarkGray);
-           
             for (int i = 0; i < r2; i++)
             {
                 for (int j = 0; j < r1; j++)
                 {
-                    if (tablica[i, j] == 1)
+                    if (tab[i, j] == 1)
                         g.FillRectangle(blackBrush, j * size_x, i * size_y, size_x, size_y);
                     else
                         g.FillRectangle(whiteBrush, j * size_x, i * size_y, size_x, size_y);
                 }
             }
             pictureBox1.Image = DrawArea;
-            licznik++;
-            if(licznik == 10)
-            {
-                g.Clear(Color.DarkGray);
-                for (int k = 0; k < 10; k++)
-                {
-                    for (int i = 0; i < r2; i++)
-                    {
-                        for (int j = 0; j < r1; j++)
-                        {
-                            if (tablica[i, j] == 1)
-                                g.FillRectangle(blackBrush, j * size_x, i * size_y, size_x, size_y);
-                            else
-                                g.FillRectangle(whiteBrush, j * size_x, i * size_y, size_x, size_y);
-                        }
-                    }
-                    pictureBox1.Image = DrawArea;
-                    tablica = s.gra(tablica, r2, r1);
-                    Thread.Sleep(1000);
-                }
-                g.Dispose();
-                licznik= 0;
-            }
-            
+            g.Dispose();
+
         }
 
 
         private void button1_Click(object sender, EventArgs e)
         {
-            int r1 = int.Parse(textBox1.Text);
-            int r2 = int.Parse(textBox2.Text);
-            float r1_f = (float)r1;
-            float r2_f = (float)r2;
+            pobierz_dane();
+            int opcja = 0;
 
-            /*if (r1 > 100)
-                r1 = 100;
-            if (r2 > 120)
-                r2 = 120;
-            int wiel = pictureBox1.Size.Width / r1;
-            int wiel2 = pictureBox1.Size.Height / r2;*/
-
-            float wiel_f = (float)pictureBox1.Size.Width / r1_f;
-            float wiel2_f = (float)pictureBox1.Size.Height / r2_f;
-            if (wiel_f < wiel2_f)
-                wiel2_f = wiel_f;
-            else
-                wiel_f = wiel2_f;
-            Graphics g;
-            g = Graphics.FromImage(DrawArea);
-            
-            Color color1 = Color.Black;
-            Color color2 = Color.White;
-            SolidBrush blackBrush = new SolidBrush(color1);
-            SolidBrush whiteBrush = new SolidBrush(color2);
-            Siatka s = new Siatka();
-            
-            string tekst2 = "30";
-            string tekst3 = "60";
-            string tekst4 = "90";
-            string tekst5 = "120";
-            string tekst6 = "225";
+            string tekst1 = "30";
+            string tekst2 = "60";
+            string tekst3 = "90";
+            string tekst4 = "120";
+            string tekst5 = "225";
             string tekst = comboBox1.SelectedItem.ToString();
             
             if (tekst == "metoda 30")
             {
-                g.Clear(Color.DarkGray);
-                MessageBox.Show(tekst2);
-                MessageBox.Show(wiel_f.ToString());
-                MessageBox.Show(wiel2_f.ToString());
+                MessageBox.Show(tekst1);                
                 int[,] tab = new int[r2, r1];
-                tab = s.metoda30(r2, r1);
-                for (int i = 0; i < r2; i++)
-                {
-                    for (int j = 0; j < r1; j++)
-                    {
-                        if (tab[i, j] == 1)
-                            g.FillRectangle(blackBrush, j * wiel_f, i * wiel2_f, wiel_f, wiel2_f);
-                        else
-                            g.FillRectangle(whiteBrush, j * wiel_f, i * wiel2_f, wiel_f, wiel2_f);
-                    }
-                }
-                
+                opcja = 1;
+                rysuj_automaty_kom(tab, opcja);
             }
                 
             else if (tekst == "metoda 60")
             {
-                g.Clear(Color.DarkGray);
-                MessageBox.Show(tekst3);
-                MessageBox.Show(wiel_f.ToString());
-                MessageBox.Show(wiel2_f.ToString());
+                MessageBox.Show(tekst2);              
                 int[,] tab = new int[r2, r1];
-                tab = s.metoda60(r2, r1);
-                for (int i = 0; i < r2; i++)
-                {
-                    for (int j = 0; j < r1; j++)
-                    {
-                        if (tab[i, j] == 1)
-                            g.FillRectangle(blackBrush, j * wiel_f, i * wiel2_f, wiel_f, wiel2_f);
-                        else
-                            g.FillRectangle(whiteBrush, j * wiel_f, i * wiel2_f, wiel_f, wiel2_f);
-                    }
-                }
-                
+                opcja = 2;
+                rysuj_automaty_kom(tab, opcja);                 
             }
                 
             else if (tekst == "metoda 90")
             {
-                g.Clear(Color.DarkGray);
-                MessageBox.Show(tekst4);
-                MessageBox.Show(wiel_f.ToString());
-                MessageBox.Show(wiel2_f.ToString());
+                MessageBox.Show(tekst3);
                 int[,] tab = new int[r2, r1];
-                tab = s.metoda90(r2, r1);
-                for(int i=0; i<r2; i++)
-                {
-                    for(int j=0; j<r1; j++)
-                    {
-                        if(tab[i,j] == 1 )
-                            g.FillRectangle(blackBrush, j * wiel_f, i * wiel2_f, wiel_f, wiel2_f);
-                        else
-                            g.FillRectangle(whiteBrush, j * wiel_f, i * wiel2_f, wiel_f, wiel2_f);
-                    }
-                }
-                
+                opcja = 3;
+                rysuj_automaty_kom(tab, opcja);                             
             }
                 
             else if (tekst == "metoda 120")
             {
-                g.Clear(Color.DarkGray);
-                MessageBox.Show(tekst5);
-                MessageBox.Show(wiel_f.ToString());
-                MessageBox.Show(wiel2_f.ToString());
+                MessageBox.Show(tekst4);
                 int[,] tab = new int[r2, r1];
-                tab = s.metoda120(r2, r1);
-                for (int i = 0; i < r2; i++)
-                {
-                    for (int j = 0; j < r1; j++)
-                    {
-                        if (tab[i, j] == 1)
-                            g.FillRectangle(blackBrush, j * wiel_f, i * wiel2_f, wiel_f, wiel2_f);
-                        else
-                            g.FillRectangle(whiteBrush, j * wiel_f, i * wiel2_f, wiel_f, wiel2_f);
-                    }
-                }
-               
+                opcja = 4;
+                rysuj_automaty_kom(tab, opcja);
             }
                 
             else if (tekst == "metoda 225")
             {
-                g.Clear(Color.DarkGray);
-                MessageBox.Show(tekst6);
-                MessageBox.Show(wiel_f.ToString());
-                MessageBox.Show(wiel2_f.ToString());
+                MessageBox.Show(tekst5);
                 int[,] tab = new int[r2, r1];
-                tab = s.metoda225(r2, r1);
-                for (int i = 0; i < r2; i++)
-                {
-                    for (int j = 0; j < r1; j++)
-                    {
-                        if (tab[i, j] == 1)
-                            g.FillRectangle(blackBrush, j * wiel_f, i * wiel2_f, wiel_f, wiel2_f);
-                        else
-                            g.FillRectangle(whiteBrush, j * wiel_f, i * wiel2_f, wiel_f, wiel2_f);
-                    }
-                }
-                
-
+                opcja = 5;
+                rysuj_automaty_kom(tab, opcja);                
             }
-
-            pictureBox1.Image = DrawArea;
-            g.Dispose();
-
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)
@@ -570,122 +762,121 @@ namespace Modelowanie_wieloskalowe
 
         }
 
+        private void nowy_watek()
+        {
+            while(stan_gry)
+            {
+                rysuj_gra_w_zycie();
+                Thread.Sleep(1000);
+            }
+            while(rozrost_ziaren)
+            {
+                rysuj_ziarna();
+                Thread.Sleep(1000);
+            }
+        }
+
+        private void rysuj_gra_w_zycie()
+        {
+            pobierz_dane();
+            lock(g)
+            {
+                Graphics gr;
+                gr = Graphics.FromImage(DrawArea);
+                
+                for (int i = 0; i < r2; i++)
+                {
+                    for (int j = 0; j < r1; j++)
+                    {
+                        if (tablica[i, j] == 1)
+                            gr.FillRectangle(blackBrush, j * size_x, i * size_y, size_x, size_y);
+                        else
+                            gr.FillRectangle(whiteBrush, j * size_x, i * size_y, size_x, size_y);
+                    }
+                }
+                tablica = s.gra(tablica, r2, r1);
+                pictureBox1.Image = DrawArea;
+                gr.Dispose();
+            }
+
+            
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            stan_gry = false;
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            stan_gry = true;
+            if (stan_gry)
+            {
+                Thread th = new Thread(nowy_watek);
+                th.Start();
+            }
+        }
+
         private void button2_Click(object sender, EventArgs e)
         {
+            pobierz_dane();
             Graphics g;
             g = Graphics.FromImage(DrawArea);
+            stan_gry = true;
+            button_GOL_click = true;
 
-            int r1 = int.Parse(textBox1.Text);
-            int r2 = int.Parse(textBox2.Text);
-            float r1_f = (float)r1;
-            float r2_f = (float)r2;
-            float wiel_f = (float)pictureBox1.Size.Width / r1_f;
-            float wiel2_f = (float)pictureBox1.Size.Height / r2_f;
-            if (wiel_f < wiel2_f)
-                wiel2_f = wiel_f;
-            else
-                wiel_f = wiel2_f;
-            //int wiel = (int)wiel_f;
-            //int wiel2 = (int)wiel2_f;
-            int[,] tab = new int[r2, r1];
+            tablica = new int[r2, r1];
             for (int i = 0; i < r2; i++)
                 for (int j = 0; j < r1; j++)
-                    tab[i, j] = 0;
-            
-            
-
-            Color color1 = Color.Black;
-            Color color2 = Color.White;
-            SolidBrush blackBrush = new SolidBrush(color1);
-            SolidBrush whiteBrush = new SolidBrush(color2);
-            Siatka s = new Siatka();
+                    tablica[i, j] = 0;
 
             string tekst = comboBox2.SelectedItem.ToString();
 
             if (tekst == "Niezmienny")
             {
                 g.Clear(Color.DarkGray);
-                tab[0, 1] = 1; tab[0, 2] = 1; tab[1, 0] = 1; tab[1, 3] = 1; tab[2, 1] = 1; tab[2, 2] = 1;
+                tablica[0, 1] = 1; tablica[0, 2] = 1; tablica[1, 0] = 1; tablica[1, 3] = 1; tablica[2, 1] = 1; tablica[2, 2] = 1;
 
-                for (int k = 0; k < 10; k++)
+                if(stan_gry)
                 {
-                    
-                    for (int i = 0; i < r2; i++)
-                    {
-                        for (int j = 0; j < r1; j++)
-                        {
-                            if (tab[i, j] == 1)
-                                g.FillRectangle(blackBrush, j * wiel_f, i * wiel2_f, wiel_f, wiel2_f);
-                            else
-                                g.FillRectangle(whiteBrush, j * wiel_f, i * wiel2_f, wiel_f, wiel2_f);
-                        }
-                    }
-                    pictureBox1.Image = DrawArea;
-                    tab = s.gra(tab, r2, r1);
-                    Thread.Sleep(1000);
-                    
+                    Thread th = new Thread(nowy_watek);
+                    th.Start();
                 }
             }
             else if (tekst == "Glider")
             {
                 g.Clear(Color.DarkGray);
-                tab[10, 11] = 1; tab[10, 12] = 1; tab[11, 10] = 1; tab[11, 11] = 1; tab[12, 12] = 1;
-                for (int k = 0; k < 10; k++)
+                tablica[10, 11] = 1; tablica[10, 12] = 1; tablica[11, 10] = 1; tablica[11, 11] = 1; tablica[12, 12] = 1;
+                if(stan_gry)
                 {
-                    for (int i = 0; i < r2; i++)
-                    {
-                        for (int j = 0; j < r1; j++)
-                        {
-                            if (tab[i, j] == 1)
-                                g.FillRectangle(blackBrush, j * wiel_f, i * wiel2_f, wiel_f, wiel2_f);
-                            else
-                                g.FillRectangle(whiteBrush, j * wiel_f, i * wiel2_f, wiel_f, wiel2_f);
-                        }
-                    }
-                    pictureBox1.Image = DrawArea;
-                    tab = s.gra(tab, r2, r1);
-                    Thread.Sleep(1000);
+                    Thread th = new Thread(nowy_watek);
+                    th.Start();
                 }
             }
             else if (tekst == "Reczna definicja")
             {
-                tablica = new int[r2, r1];
-                for (int i = 0; i < r2; i++)
-                    for (int j = 0; j < r1; j++)
-                        tablica[i, j] = 0;
+                stan_gry = false;
                 for (int i = 0; i < r2; i++)
                 {
                     for (int j = 0; j < r1; j++)
                     {
                         if (tablica[i, j] == 1)
-                            g.FillRectangle(blackBrush, j * wiel_f, i * wiel2_f, wiel_f, wiel2_f);
+                            g.FillRectangle(blackBrush, j * size_x, i * size_y, size_x, size_y);
                         else
-                            g.FillRectangle(whiteBrush, j * wiel_f, i * wiel2_f, wiel_f, wiel2_f);
+                            g.FillRectangle(whiteBrush, j * size_x, i * size_y, size_x, size_y);
                     }
                 }
                 pictureBox1.Image = DrawArea;
-                //pictureBox1_Click(sender, e);
-
+                g.Dispose();
             }
             else if (tekst == "Oscylator")
             {
                 g.Clear(Color.DarkGray);
-                tab[0, 1] = 1; tab[1, 1] = 1; tab[2, 1] = 1;
-                for (int k = 0; k < 10; k++)
+                tablica[0, 1] = 1; tablica[1, 1] = 1; tablica[2, 1] = 1;
+                if(stan_gry)
                 {
-                    for (int i = 0; i < r2; i++)
-                    {
-                        for (int j = 0; j < r1; j++)
-                        {
-                            if (tab[i, j] == 1)
-                                g.FillRectangle(blackBrush, j * wiel_f, i * wiel2_f, wiel_f, wiel2_f);
-                            else
-                                g.FillRectangle(whiteBrush, j * wiel_f, i * wiel2_f, wiel_f, wiel2_f);
-                        }
-                    }
-                    pictureBox1.Image = DrawArea;
-                    tab = s.gra(tab, r2, r1);
-                    Thread.Sleep(1000);
+                    Thread th = new Thread(nowy_watek);
+                    th.Start();
                 }
             }
             else if (tekst == "Losowy")
@@ -693,31 +884,174 @@ namespace Modelowanie_wieloskalowe
                 g.Clear(Color.DarkGray);
                 Random rand = new Random();
                 for (int i = 0; i < r2 * r1 / 3; i++)
-                    tab[rand.Next(r2), rand.Next(r1)] = 1;
-                for (int k = 0; k < 10; k++)
+                    tablica[rand.Next(r2), rand.Next(r1)] = 1;
+                if(stan_gry)
                 {
-                    for (int i = 0; i < r2; i++)
-                    {
-                        for (int j = 0; j < r1; j++)
-                        {
-                            if (tab[i, j] == 1)
-                                g.FillRectangle(blackBrush, j * wiel_f, i * wiel2_f, wiel_f, wiel2_f);
-                            else
-                                g.FillRectangle(whiteBrush, j * wiel_f, i * wiel2_f, wiel_f, wiel2_f);
-                        }
-                    }
-                    pictureBox1.Image = DrawArea;
-                    tab = s.gra(tab, r2, r1);
-                    Thread.Sleep(1000);
+                    Thread th = new Thread(nowy_watek);
+                    th.Start();
                 }
             }
+        }
 
-            pictureBox1.Image = DrawArea;
-            g.Dispose();
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            periodyczne = true;
+            absorbujace = false;
+        }
+
+        private void checkBox2_CheckedChanged(object sender, EventArgs e)
+        {
+            periodyczne = false;
+            absorbujace = true;
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            rozrost_ziaren = true;
+            if (rozrost_ziaren)
+            {
+                Thread th = new Thread(nowy_watek);
+                th.Start();
+            }
+        }
+
+        private void label3_Click(object sender, EventArgs e)
+        {
 
         }
 
-       
+        private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void rysuj_ziarna()
+        {
+            lock(g)
+            {
+                Graphics grp;
+                grp = Graphics.FromImage(DrawArea);
+                for (int i = 0; i < r2; i++)
+                {
+                    for (int j = 0; j < r1; j++)
+                    {
+                        for (int k = 0; k < 1000; k++)
+                        {
+                            if (tablica[i, j] == k)
+                                grp.FillRectangle(solidBrushes[k], j * size_x, i * size_y, size_x, size_y);
+                        }
+                    }
+                }
+                if (periodyczne)
+                    tablica = s.sprawdz_warunki_brzeogwe_vonNeymana_periodyczne(tablica, r2, r1);
+                else//absorbujace
+                    tablica = s.sprawdz_warunki_brzeogwe_vonNeymana_absorbujace(tablica, r2, r1);
+                pictureBox1.Image = DrawArea;
+                grp.Dispose();
+            }
+                        
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            pobierz_dane();
+            wyznacz_kolory();
+            button_GOL_click = false;
+            rozrost_ziaren = true;
+            Graphics g;
+            g = Graphics.FromImage(DrawArea);
+
+            tablica = new int[r2, r1];
+            for (int i = 0; i < r2; i++)
+                for (int j = 0; j < r1; j++)
+                    tablica[i, j] = 0;
+
+            string tekst = comboBox3.SelectedItem.ToString();
+            if(tekst == "Jednorodne")
+            {
+                g.Clear(Color.DarkGray);
+                int ilosc_wiersz_i = int.Parse(textBox3.Text);
+                int ilosc_kolumna_i = int.Parse(textBox4.Text);
+                float ilosc_wiersz = (float)ilosc_wiersz_i;
+                float ilosc_kolumna = (float)ilosc_kolumna_i;
+                float odstep_wiersz_f = r1_f / ilosc_wiersz;
+                int odstep_wiersz = (int)Math.Ceiling(odstep_wiersz_f);
+                //MessageBox.Show(odstep_wiersz.ToString());
+                float odstep_kolumna_f = r2_f / ilosc_kolumna;
+                int odstep_kolumna = (int)Math.Ceiling(odstep_kolumna_f);
+                //MessageBox.Show(odstep_kolumna.ToString());
+                int ilosc_zarodkow = ilosc_wiersz_i * ilosc_kolumna_i;
+                int val = 1;
+                for (int i = 0; i < r2; i += odstep_kolumna)
+                    for (int j = 0; j < r1; j += odstep_wiersz)
+                    {
+                        tablica[(odstep_kolumna / 2) + i,(odstep_wiersz / 2) + j] = val;
+                        val++;
+                    }
+                if (rozrost_ziaren)
+                {
+                    Thread th = new Thread(nowy_watek);
+                    th.Start();
+                }
+
+                
+            }
+            else if(tekst == "Z promieniem")
+            {
+                g.Clear(Color.DarkGray);
+                int promien = int.Parse(textBox3.Text);
+                int ilosc = int.Parse(textBox4.Text);
+                Random rand = new Random();
+                for (int i = 1; i < ilosc + 1; i++)
+                {
+                    int a = rand.Next(r2);
+                    int b = rand.Next(r1);
+                    if (tablica[a, b] == 0)
+                        tablica[a, b] = i;
+                }
+                if (rozrost_ziaren)
+                {
+                    Thread th = new Thread(nowy_watek);
+                    th.Start();
+                }
+                
+
+            }
+            else if(tekst == "Losowe")
+            {
+                g.Clear(Color.DarkGray);
+                Random rand = new Random();
+                int ilosc = int.Parse(textBox4.Text);
+                for(int i =1; i<ilosc+1; i++)
+                {
+                    int a = rand.Next(r2);
+                    int b = rand.Next(r1);
+                    if (tablica[a, b] == 0)
+                        tablica[a, b] = i;
+                }
+                if (rozrost_ziaren)
+                {
+                    Thread th = new Thread(nowy_watek);
+                    th.Start();
+                }
+                
+            }
+            else//wyklinanie
+            {
+                for (int i = 0; i < r2; i++)
+                {
+                    for (int j = 0; j < r1; j++)
+                    {
+                        if (tablica[i, j] == 1)
+                            g.FillRectangle(blackBrush, j * size_x, i * size_y, size_x, size_y);
+                        else
+                            g.FillRectangle(whiteBrush, j * size_x, i * size_y, size_x, size_y);
+                    }
+                }
+                pictureBox1.Image = DrawArea;
+                g.Dispose();
+            }
+        }
     }
 
     

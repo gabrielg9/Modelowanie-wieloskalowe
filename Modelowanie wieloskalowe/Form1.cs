@@ -31,6 +31,18 @@ namespace Modelowanie_wieloskalowe
         bool periodyczne;
         bool absorbujace;
         bool rozrost_ziaren;
+        bool vonNeumann;
+        bool moore;
+        bool pentagonalne_lewe;
+        bool pentagonalne_prawe;
+        bool pentagonalne_gorne;
+        bool pentagonalne_dolne;
+        bool pentagonalne_losowe;
+        bool heksagonalne_prawe;
+        bool heksagonalne_lewe;
+        bool heksagonalne_losowe;
+        bool promien;
+        Random random = new Random();
         SolidBrush blackBrush = new SolidBrush(Color.Black);
         SolidBrush whiteBrush = new SolidBrush(Color.White);
         SolidBrush yellowBrush = new SolidBrush(Color.Yellow);
@@ -504,7 +516,7 @@ namespace Modelowanie_wieloskalowe
                 return tab1;
             }
 
-            public int[,] sprawdz_warunki_brzegowe_moor(int[,] tab, int m, int n)
+            public int[,] sprawdz_warunki_brzegowe_moor_periodyczne(int[,] tab, int m, int n)
             {
                 int[,] tab1 = new int[m, n];
                 for (int i = 0; i < m; i++)
@@ -519,28 +531,740 @@ namespace Modelowanie_wieloskalowe
                 {
                     for(int j=0; j<n; j++)
                     {
-                        for(int r=-1; r<2; r++)
-                            for(int t=-1; t<2; t++)
-                            {
-                                licznik = 0;
-                                aktualna_wartosc = tab[i + r, j + t];
-                                max_wartosc = tab[i + r, j + r];
-                                for (int k = -1; k < 2; k++)
+                        if (tab[i, j] == 0)
+                        {
+                            for (int r = -1; r < 2; r++)
+                                for (int t = -1; t < 2; t++)
                                 {
-                                    for (int l = -1; l < 2; l++)
+                                    licznik = 0;
+                                    aktualna_wartosc = tab[(i + r +m)%m, (j + t+n)%n];
+                                    for (int k = -1; k < 2; k++)
                                     {
-                                        if (aktualna_wartosc == tab[i + k, j + l])
-                                            licznik++;
+                                        for (int l = -1; l < 2; l++)
+                                        {
+                                            if ((aktualna_wartosc == tab[(i + k+m)%m, (j + l+n)%n] )&& tab[(i+k+m)%m,(j+l+n)%n]!=0)
+                                                licznik++;
+                                        }
+                                    }
+                                    if (licznik > max_licznik)
+                                    {
+                                        max_licznik = licznik;
+                                        max_wartosc = aktualna_wartosc;
+                                    }
+                                    licznik = 0;
+                                }
+
+                            tab1[i, j] = max_wartosc;
+                            max_wartosc = 0;
+                            max_licznik = 0;
+                        }
+                        else
+                            tab1[i, j] = tab[i, j];
+                    }
+                }
+                return tab1;
+            }
+
+            public int[,] sprawdz_warunki_brzegowe_moor_absorbujace(int[,] tab, int m, int n)
+            {
+                int[,] tab1 = new int[m, n];
+                for (int i = 0; i < m; i++)
+                    for (int j = 0; j < n; j++)
+                        tab1[i, j] = 0;
+
+                int wartosc = 0;
+                int max_wartosc = 0;
+                int licznik = 0;
+                int max_licznik = 0;
+                int[] zbior;
+                zbior = new int[9];
+                for (int i = 0; i < m; i++)
+                {
+                    for (int j = 0; j < n; j++)
+                    {
+                        wartosc = 0; licznik = 0; max_licznik = 0;
+                        if (tab[i, j] == 0)
+                        {
+                            if (j == 0 & i != 0 && i != m - 1)
+                            {
+                                zbior[0] = 0; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i - 1, j + 1]; zbior[3] = 0; zbior[4] = tab[i, j]; zbior[5] = tab[i, j + 1]; zbior[6] = 0; zbior[7] = tab[i + 1, j]; zbior[8] = tab[i + 1, j + 1];
+                            }
+                            else if (j == n - 1 && i != 0 && i != m - 1)
+                            {
+                                zbior[0] = tab[i - 1, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = 0; zbior[3] = tab[i, j - 1]; zbior[4] = tab[i, j]; zbior[5] = 0; zbior[6] = tab[i + 1, j - 1]; zbior[7] = tab[i + 1, j]; zbior[8] = 0;
+                            }
+                            else if (i == 0 && j != 0 && j != n - 1)
+                            {
+                                zbior[0] = 0; zbior[1] = 0; zbior[2] = 0; zbior[3] = tab[i, j - 1]; zbior[4] = tab[i, j]; zbior[5] = tab[i, j + 1]; zbior[6] = tab[i + 1, j - 1]; zbior[7] = tab[i + 1, j]; zbior[8] = tab[i + 1, j + 1];
+                            }
+                            else if (i == m - 1 && j != 0 && j != n - 1)
+                            {
+                                zbior[0] = tab[i - 1, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i - 1, j + 1]; zbior[3] = tab[i, j - 1]; zbior[4] = tab[i, j]; zbior[5] = tab[i, j + 1]; zbior[6] = 0; zbior[7] = 0; zbior[8] = 0;
+                            }
+                            else if (i == 0 && j == 0)
+                            {
+                                zbior[0] = 0; zbior[1] = 0; zbior[2] = 0; zbior[3] = 0; zbior[4] = tab[i, j]; zbior[5] = tab[i, j + 1]; zbior[6] = 0; zbior[7] = tab[i + 1, j]; zbior[8] = tab[i + 1, j + 1];
+                            }
+                            else if (i == 0 && j == n - 1)
+                            {
+                                zbior[0] = 0; zbior[1] = 0; zbior[2] = 0; zbior[3] = tab[i, j - 1]; zbior[4] = tab[i, j]; zbior[5] = 0; zbior[6] = tab[i + 1, j - 1]; zbior[7] = tab[i + 1, j]; zbior[8] = 0;
+                            }
+                            else if (i == m - 1 && j == n - 1)
+                            {
+                                zbior[0] = tab[i - 1, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = 0; zbior[3] = tab[i, j - 1]; zbior[4] = tab[i, j]; zbior[5] =0; zbior[6] = 0; zbior[7] = 0; zbior[8] = 0;
+                            }
+                            else if (i == m - 1 && j == 0)
+                            {
+                                zbior[0] = 0; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i - 1, j + 1]; zbior[3] = 0; zbior[4] = tab[i, j]; zbior[5] = tab[i, j + 1]; zbior[6] = 0; zbior[7] = 0; zbior[8] = 0;
+                            }
+                            else
+                            {
+                                zbior[0] = tab[i-1, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i-1, j + 1]; zbior[3] = tab[i, j-1];zbior[4] = tab[i, j];zbior[5] = tab[i, j + 1];zbior[6] = tab[i + 1, j - 1];zbior[7] = tab[i + 1, j];zbior[8] = tab[i + 1, j + 1];
+                            }
+                            for (int l = 0; l < 9; l++)
+                            {
+                                wartosc = zbior[l];
+                                for (int k = 0; k < 9; k++)
+                                {
+                                    if (wartosc == zbior[k] && zbior[k] != 0)
+                                    {
+                                        licznik++;
                                     }
                                 }
                                 if (licznik > max_licznik)
                                 {
                                     max_licznik = licznik;
-                                    max_wartosc = aktualna_wartosc;
+                                    max_wartosc = wartosc;
                                 }
+                                licznik = 0;
+
                             }
-                        
-                         tab1[i, j] = max_wartosc;
+                            tab1[i, j] = max_wartosc;
+                            max_wartosc = 0;
+                        }
+                        else
+                            tab1[i, j] = tab[i, j];
+                    }
+                }
+
+                return tab1;
+            }
+
+            public int[,] sprawdz_warunki_brzegowe_pentagonalne_lewe_periodyczne(int[,] tab, int m, int n)
+            {
+                int[,] tab1 = new int[m, n];
+                for (int i = 0; i < m; i++)
+                    for (int j = 0; j < n; j++)
+                        tab1[i, j] = 0;
+
+                int aktualna_wartosc = 0;
+                int max_wartosc = 0;
+                int licznik = 0;
+                int max_licznik = 0;
+                for (int i = 0; i < m; i++)
+                {
+                    for (int j = 0; j < n; j++)
+                    {
+                        if (tab[i, j] == 0)
+                        {
+                            for (int r = -1; r < 2; r++)
+                                for (int t = 0; t < 2; t++)
+                                {
+                                    licznik = 0;
+                                    aktualna_wartosc = tab[(i + r + m) % m, (j + t + n) % n];
+                                    for (int k = -1; k < 2; k++)
+                                    {
+                                        for (int l = 0; l < 2; l++)
+                                        {
+                                            if ((aktualna_wartosc == tab[(i + k + m) % m, (j + l + n) % n]) && tab[(i + k + m) % m, (j + l + n) % n] != 0)
+                                                licznik++;
+                                        }
+                                    }
+                                    if (licznik > max_licznik)
+                                    {
+                                        max_licznik = licznik;
+                                        max_wartosc = aktualna_wartosc;
+                                    }
+                                    licznik = 0;
+                                }
+
+                            tab1[i, j] = max_wartosc;
+                            max_wartosc = 0;
+                            max_licznik = 0;
+                        }
+                        else
+                            tab1[i, j] = tab[i, j];
+                    }
+                }
+                return tab1;
+            }
+
+            public int[,] sprawdz_warunki_brzegowe_pentagonalne_lewe_absorbujace(int[,] tab, int m, int n)
+            {
+                int[,] tab1 = new int[m, n];
+                for (int i = 0; i < m; i++)
+                    for (int j = 0; j < n; j++)
+                        tab1[i, j] = 0;
+
+                int wartosc = 0;
+                int max_wartosc = 0;
+                int licznik = 0;
+                int max_licznik = 0;
+                int[] zbior;
+                zbior = new int[6];
+                for (int i = 0; i < m; i++)
+                {
+                    for (int j = 0; j < n; j++)
+                    {
+                        wartosc = 0; licznik = 0; max_licznik = 0;
+                        if (tab[i, j] == 0)
+                        {
+                            if (j == 0 & i != 0 && i != m - 1)
+                            {
+                                zbior[0] = tab[i-1,j]; zbior[1] = tab[i - 1, j+1]; zbior[2] = tab[i,j]; zbior[3] = tab[i, j+1]; zbior[4] = tab[i+1,j]; zbior[5] = tab[i + 1, j+1];
+                            }
+                            else if (j == n - 1 && i != 0 && i != m - 1)
+                            {
+                                zbior[0] = tab[i - 1, j]; zbior[1] = 0; zbior[2] = tab[i, j]; zbior[3] =0; zbior[4] = tab[i + 1, j ]; zbior[5] = 0;
+                            }
+                            else if (i == 0 && j != 0 && j != n - 1)
+                            {
+                                zbior[0] = 0; zbior[1] = 0; zbior[2] = tab[i, j]; zbior[3] = tab[i, j+1]; zbior[4] = tab[i + 1, j]; zbior[5] = tab[i + 1, j+1];
+                            }
+                            else if (i == m - 1 && j != 0 && j != n - 1)
+                            {
+                                zbior[0] = tab[i - 1, j ]; zbior[1] = tab[i - 1, j+1]; zbior[2] = tab[i, j]; zbior[3] = tab[i, j+1]; zbior[4] = 0; zbior[5] = 0;
+                            }
+                            else if (i == 0 && j == 0)
+                            {
+                                zbior[0] = 0; zbior[1] = 0; zbior[2] = tab[i,j]; zbior[3] = tab[i, j+1]; zbior[4] = tab[i+1,j]; zbior[5] = tab[i + 1, j+1];
+                            }
+                            else if (i == 0 && j == n - 1)
+                            {
+                                zbior[0] = 0; zbior[1] = 0; zbior[2] = tab[i, j]; zbior[3] = 0; zbior[4] = tab[i + 1, j]; zbior[5] = 0;
+                            }
+                            else if (i == m - 1 && j == n - 1)
+                            {
+                                zbior[0] = tab[i - 1, j ]; zbior[1] = 0; zbior[2] = tab[i, j]; zbior[3] = 0; zbior[4] = 0; zbior[5] = 0;
+                            }
+                            else if (i == m - 1 && j == 0)
+                            {
+                                zbior[0] = tab[i-1,j]; zbior[1] = tab[i - 1, j+1]; zbior[2] = tab[i,j]; zbior[3] = tab[i, j+1]; zbior[4] = 0; zbior[5] = 0;
+                            }
+                            else
+                            {
+                                zbior[0] = tab[i - 1, j]; zbior[1] = tab[i - 1, j+1]; zbior[2] = tab[i, j ]; zbior[3] = tab[i, j+1]; zbior[4] = tab[i + 1, j]; zbior[5] = tab[i + 1, j+1];
+                            }
+                            for (int l = 0; l < 6; l++)
+                            {
+                                wartosc = zbior[l];
+                                for (int k = 0; k < 6; k++)
+                                {
+                                    if (wartosc == zbior[k] && zbior[k] != 0)
+                                    {
+                                        licznik++;
+                                    }
+                                }
+                                if (licznik > max_licznik)
+                                {
+                                    max_licznik = licznik;
+                                    max_wartosc = wartosc;
+                                }
+                                licznik = 0;
+
+                            }
+                            tab1[i, j] = max_wartosc;
+                            max_wartosc = 0;
+                        }
+                        else
+                            tab1[i, j] = tab[i, j];
+                    }
+                }
+
+                return tab1;
+            }
+
+            public int[,] sprawdz_warunki_brzegowe_pentagonalne_prawe_periodyczne(int[,] tab, int m, int n)
+            {
+                int[,] tab1 = new int[m, n];
+                for (int i = 0; i < m; i++)
+                    for (int j = 0; j < n; j++)
+                        tab1[i, j] = 0;
+
+                int aktualna_wartosc = 0;
+                int max_wartosc = 0;
+                int licznik = 0;
+                int max_licznik = 0;
+                for (int i = 0; i < m; i++)
+                {
+                    for (int j = 0; j < n; j++)
+                    {
+                        if (tab[i, j] == 0)
+                        {
+                            for (int r = -1; r < 2; r++)
+                                for (int t = -1; t < 1; t++)
+                                {
+                                    licznik = 0;
+                                    aktualna_wartosc = tab[(i + r + m) % m, (j + t + n) % n];
+                                    for (int k = -1; k < 2; k++)
+                                    {
+                                        for (int l = -1; l < 1; l++)
+                                        {
+                                            if ((aktualna_wartosc == tab[(i + k + m) % m, (j + l + n) % n]) && tab[(i + k + m) % m, (j + l + n) % n] != 0)
+                                                licznik++;
+                                        }
+                                    }
+                                    if (licznik > max_licznik)
+                                    {
+                                        max_licznik = licznik;
+                                        max_wartosc = aktualna_wartosc;
+                                    }
+                                    licznik = 0;
+                                }
+
+                            tab1[i, j] = max_wartosc;
+                            max_wartosc = 0;
+                            max_licznik = 0;
+                        }
+                        else
+                            tab1[i, j] = tab[i, j];
+                    }
+                }
+                return tab1;
+            }
+
+            public int[,] sprawdz_warunki_brzegowe_pentagonalne_prawe_absorbujace(int[,] tab, int m, int n)
+            {
+                int[,] tab1 = new int[m, n];
+                for (int i = 0; i < m; i++)
+                    for (int j = 0; j < n; j++)
+                        tab1[i, j] = 0;
+
+                int wartosc = 0;
+                int max_wartosc = 0;
+                int licznik = 0;
+                int max_licznik = 0;
+                int[] zbior;
+                zbior = new int[6];
+                for (int i = 0; i < m; i++)
+                {
+                    for (int j = 0; j < n; j++)
+                    {
+                        wartosc = 0; licznik = 0; max_licznik = 0;
+                        if (tab[i, j] == 0)
+                        {
+                            if (j == 0 & i != 0 && i != m - 1)
+                            {
+                                zbior[0] = 0; zbior[1] = tab[i - 1, j]; zbior[2] = 0; zbior[3] = tab[i, j]; zbior[4] = 0; zbior[5] = tab[i + 1, j];
+                            }
+                            else if (j == n - 1 && i != 0 && i != m - 1)
+                            {
+                                zbior[0] = tab[i - 1, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i, j - 1]; zbior[3] = tab[i, j]; zbior[4] = tab[i + 1, j - 1]; zbior[5] = tab[i + 1, j];
+                            }
+                            else if (i == 0 && j != 0 && j != n - 1)
+                            {
+                                zbior[0] = 0; zbior[1] = 0; zbior[2] = tab[i, j - 1]; zbior[3] = tab[i, j]; zbior[4] = tab[i + 1, j - 1]; zbior[5] = tab[i + 1, j];
+                            }
+                            else if (i == m - 1 && j != 0 && j != n - 1)
+                            {
+                                zbior[0] = tab[i - 1, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i, j - 1]; zbior[3] = tab[i, j]; zbior[4] = 0; zbior[5] = 0;
+                            }
+                            else if (i == 0 && j == 0)
+                            {
+                                zbior[0] = 0; zbior[1] = 0; zbior[2] = 0; zbior[3] = tab[i, j]; zbior[4] = 0; zbior[5] = tab[i + 1, j];
+                            }
+                            else if (i == 0 && j == n - 1)
+                            {
+                                zbior[0] = 0; zbior[1] = 0; zbior[2] = tab[i, j - 1]; zbior[3] = tab[i, j]; zbior[4] = tab[i + 1, j - 1]; zbior[5] = tab[i + 1, j];
+                            }
+                            else if (i == m - 1 && j == n - 1)
+                            {
+                                zbior[0] = tab[i - 1, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i, j - 1]; zbior[3] = tab[i, j]; zbior[4] = 0; zbior[5] = 0;
+                            }
+                            else if (i == m - 1 && j == 0)
+                            {
+                                zbior[0] = 0; zbior[1] = tab[i - 1, j]; zbior[2] = 0; zbior[3] = tab[i, j]; zbior[4] = 0; zbior[5] = 0;
+                            }
+                            else
+                            {
+                                zbior[0] = tab[i - 1, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i, j - 1]; zbior[3] = tab[i, j]; zbior[4] = tab[i + 1, j - 1]; zbior[5] = tab[i + 1, j];
+                            }
+                            for (int l = 0; l < 6; l++)
+                            {
+                                wartosc = zbior[l];
+                                for (int k = 0; k < 6; k++)
+                                {
+                                    if (wartosc == zbior[k] && zbior[k] != 0)
+                                    {
+                                        licznik++;
+                                    }
+                                }
+                                if (licznik > max_licznik)
+                                {
+                                    max_licznik = licznik;
+                                    max_wartosc = wartosc;
+                                }
+                                licznik = 0;
+
+                            }
+                            tab1[i, j] = max_wartosc;
+                            max_wartosc = 0;
+                        }
+                        else
+                            tab1[i, j] = tab[i, j];
+                    }
+                }
+
+                return tab1;
+            }
+
+            public int[,] sprawdz_warunki_brzegowe_pentagonalne_gorne_periodyczne(int[,] tab, int m, int n)
+            {
+                int[,] tab1 = new int[m, n];
+                for (int i = 0; i < m; i++)
+                    for (int j = 0; j < n; j++)
+                        tab1[i, j] = 0;
+
+                int aktualna_wartosc = 0;
+                int max_wartosc = 0;
+                int licznik = 0;
+                int max_licznik = 0;
+                for (int i = 0; i < m; i++)
+                {
+                    for (int j = 0; j < n; j++)
+                    {
+                        if (tab[i, j] == 0)
+                        {
+                            for (int r = 0; r < 2; r++)
+                                for (int t = -1; t < 2; t++)
+                                {
+                                    licznik = 0;
+                                    aktualna_wartosc = tab[(i + r + m) % m, (j + t + n) % n];
+                                    for (int k = 0; k < 2; k++)
+                                    {
+                                        for (int l = -1; l < 2; l++)
+                                        {
+                                            if ((aktualna_wartosc == tab[(i + k + m) % m, (j + l + n) % n]) && tab[(i + k + m) % m, (j + l + n) % n] != 0)
+                                                licznik++;
+                                        }
+                                    }
+                                    if (licznik > max_licznik)
+                                    {
+                                        max_licznik = licznik;
+                                        max_wartosc = aktualna_wartosc;
+                                    }
+                                    licznik = 0;
+                                }
+
+                            tab1[i, j] = max_wartosc;
+                            max_wartosc = 0;
+                            max_licznik = 0;
+                        }
+                        else
+                            tab1[i, j] = tab[i, j];
+                    }
+                }
+                return tab1;
+            }
+
+            public int[,] sprawdz_warunki_brzegowe_pentagonalne_gorne_absorbujace(int[,] tab, int m, int n)
+            {
+                int[,] tab1 = new int[m, n];
+                for (int i = 0; i < m; i++)
+                    for (int j = 0; j < n; j++)
+                        tab1[i, j] = 0;
+
+                int wartosc = 0;
+                int max_wartosc = 0;
+                int licznik = 0;
+                int max_licznik = 0;
+                int[] zbior;
+                zbior = new int[6];
+                for (int i = 0; i < m; i++)
+                {
+                    for (int j = 0; j < n; j++)
+                    {
+                        wartosc = 0; licznik = 0; max_licznik = 0;
+                        if (tab[i, j] == 0)
+                        {
+                            if (j == 0 & i != 0 && i != m - 1)
+                            {
+                                zbior[0] = 0; zbior[1] = tab[i, j]; zbior[2] = tab[i, j+1]; zbior[3] = 0; zbior[4] = tab[i + 1, j]; zbior[5] = tab[i + 1, j + 1];
+                            }
+                            else if (j == n - 1 && i != 0 && i != m - 1)
+                            {
+                                zbior[0] = tab[i , j-1]; zbior[1] = tab[i,j]; zbior[2] = 0; zbior[3] = tab[i+1,j-1]; zbior[4] = tab[i + 1, j]; zbior[5] = 0;
+                            }
+                            else if (i == 0 && j != 0 && j != n - 1)
+                            {
+                                zbior[0] = tab[i,j-1]; zbior[1] = tab[i,j]; zbior[2] = tab[i, j+1]; zbior[3] = tab[i+1, j - 1]; zbior[4] = tab[i + 1, j]; zbior[5] = tab[i + 1, j + 1];
+                            }
+                            else if (i == m - 1 && j != 0 && j != n - 1)
+                            {
+                                zbior[0] = tab[i, j-1]; zbior[1] = tab[i, j]; zbior[2] = tab[i, j+1]; zbior[3] = 0; zbior[4] = 0; zbior[5] = 0;
+                            }
+                            else if (i == 0 && j == 0)
+                            {
+                                zbior[0] = 0; zbior[1] = tab[i,j]; zbior[2] = tab[i, j+1]; zbior[3] = 0; zbior[4] = tab[i + 1, j]; zbior[5] = tab[i + 1, j + 1];
+                            }
+                            else if (i == 0 && j == n - 1)
+                            {
+                                zbior[0] = tab[i,j-1]; zbior[1] = tab[i,j]; zbior[2] = 0; zbior[3] = tab[i+1,j-1]; zbior[4] = tab[i + 1, j]; zbior[5] = 0;
+                            }
+                            else if (i == m - 1 && j == n - 1)
+                            {
+                                zbior[0] = tab[i, j-1]; zbior[1] = tab[i,j]; zbior[2] = 0; zbior[3] = 0; zbior[4] = 0; zbior[5] = 0;
+                            }
+                            else if (i == m - 1 && j == 0)
+                            {
+                                zbior[0] = 0; zbior[1] = tab[i, j]; zbior[2] = tab[i, j+1]; zbior[3] = 0; zbior[4] = 0; zbior[5] = 0;
+                            }
+                            else
+                            {
+                                zbior[0] = tab[i, j-1]; zbior[1] = tab[i, j]; zbior[2] = tab[i, j+1]; zbior[3] = tab[i+1, j - 1]; zbior[4] = tab[i + 1, j]; zbior[5] = tab[i + 1, j + 1];
+                            }
+                            for (int l = 0; l < 6; l++)
+                            {
+                                wartosc = zbior[l];
+                                for (int k = 0; k < 6; k++)
+                                {
+                                    if (wartosc == zbior[k] && zbior[k] != 0)
+                                    {
+                                        licznik++;
+                                    }
+                                }
+                                if (licznik > max_licznik)
+                                {
+                                    max_licznik = licznik;
+                                    max_wartosc = wartosc;
+                                }
+                                licznik = 0;
+
+                            }
+                            tab1[i, j] = max_wartosc;
+                            max_wartosc = 0;
+                        }
+                        else
+                            tab1[i, j] = tab[i, j];
+                    }
+                }
+
+                return tab1;
+            }
+
+            public int[,] sprawdz_warunki_brzegowe_pentagonalne_dolne_periodyczne(int[,] tab, int m, int n)
+            {
+                int[,] tab1 = new int[m, n];
+                for (int i = 0; i < m; i++)
+                    for (int j = 0; j < n; j++)
+                        tab1[i, j] = 0;
+
+                int aktualna_wartosc = 0;
+                int max_wartosc = 0;
+                int licznik = 0;
+                int max_licznik = 0;
+                for (int i = 0; i < m; i++)
+                {
+                    for (int j = 0; j < n; j++)
+                    {
+                        if (tab[i, j] == 0)
+                        {
+                            for (int r = -1; r < 1; r++)
+                                for (int t = -1; t < 2; t++)
+                                {
+                                    licznik = 0;
+                                    aktualna_wartosc = tab[(i + r + m) % m, (j + t + n) % n];
+                                    for (int k = -1; k < 1; k++)
+                                    {
+                                        for (int l = -1; l < 2; l++)
+                                        {
+                                            if ((aktualna_wartosc == tab[(i + k + m) % m, (j + l + n) % n]) && tab[(i + k + m) % m, (j + l + n) % n] != 0)
+                                                licznik++;
+                                        }
+                                    }
+                                    if (licznik > max_licznik)
+                                    {
+                                        max_licznik = licznik;
+                                        max_wartosc = aktualna_wartosc;
+                                    }
+                                    licznik = 0;
+                                }
+
+                            tab1[i, j] = max_wartosc;
+                            max_wartosc = 0;
+                            max_licznik = 0;
+                        }
+                        else
+                            tab1[i, j] = tab[i, j];
+                    }
+                }
+                return tab1;
+            }
+
+            public int[,] sprawdz_warunki_brzegowe_pentagonalne_dolne_absorbujace(int[,] tab, int m, int n)
+            {
+                int[,] tab1 = new int[m, n];
+                for (int i = 0; i < m; i++)
+                    for (int j = 0; j < n; j++)
+                        tab1[i, j] = 0;
+
+                int wartosc = 0;
+                int max_wartosc = 0;
+                int licznik = 0;
+                int max_licznik = 0;
+                int[] zbior;
+                zbior = new int[6];
+                for (int i = 0; i < m; i++)
+                {
+                    for (int j = 0; j < n; j++)
+                    {
+                        wartosc = 0; licznik = 0; max_licznik = 0;
+                        if (tab[i, j] == 0)
+                        {
+                            if (j == 0 & i != 0 && i != m - 1)
+                            {
+                                zbior[0] = 0; zbior[1] = tab[i-1, j]; zbior[2] = tab[i-1, j + 1]; zbior[3] = 0; zbior[4] = tab[i, j]; zbior[5] = tab[i, j + 1];
+                            }
+                            else if (j == n - 1 && i != 0 && i != m - 1)
+                            {
+                                zbior[0] = tab[i-1, j - 1]; zbior[1] = tab[i-1, j]; zbior[2] = 0; zbior[3] = tab[i, j - 1]; zbior[4] = tab[i, j]; zbior[5] = 0;
+                            }
+                            else if (i == 0 && j != 0 && j != n - 1)
+                            {
+                                zbior[0] = 0; zbior[1] = 0; zbior[2] = 0; zbior[3] = tab[i, j - 1]; zbior[4] = tab[i, j]; zbior[5] = tab[i, j + 1];
+                            }
+                            else if (i == m - 1 && j != 0 && j != n - 1)
+                            {
+                                zbior[0] = tab[i-1, j - 1]; zbior[1] = tab[i-1, j]; zbior[2] = tab[i-1, j + 1]; zbior[3] = tab[i,j-1]; zbior[4] = tab[i,j]; zbior[5] = tab[i,j+1];
+                            }
+                            else if (i == 0 && j == 0)
+                            {
+                                zbior[0] = 0;zbior[1]= 0; zbior[2] = 0; zbior[3] = 0; zbior[4] = tab[i, j]; zbior[5] = tab[i, j + 1];
+                            }
+                            else if (i == 0 && j == n - 1)
+                            {
+                                zbior[0] = 0; zbior[1] = 0; zbior[2] = 0; zbior[3] = tab[i , j - 1]; zbior[4] = tab[i, j]; zbior[5] = 0;
+                            }
+                            else if (i == m - 1 && j == n - 1)
+                            {
+                                zbior[0] = tab[i-1, j - 1]; zbior[1] = tab[i-1, j]; zbior[2] = 0; zbior[3] = tab[i,j-1]; zbior[4] = tab[i,j]; zbior[5] = 0;
+                            }
+                            else if (i == m - 1 && j == 0)
+                            {
+                                zbior[0] = 0; zbior[1] = tab[i-1, j]; zbior[2] = tab[i-1, j + 1]; zbior[3] = 0; zbior[4] = tab[i,j]; zbior[5] = tab[i,j+1];
+                            }
+                            else
+                            {
+                                zbior[0] = tab[i-1, j - 1]; zbior[1] = tab[i-1, j]; zbior[2] = tab[i-1, j + 1]; zbior[3] = tab[i, j - 1]; zbior[4] = tab[i, j]; zbior[5] = tab[i, j + 1];
+                            }
+                            for (int l = 0; l < 6; l++)
+                            {
+                                wartosc = zbior[l];
+                                for (int k = 0; k < 6; k++)
+                                {
+                                    if (wartosc == zbior[k] && zbior[k] != 0)
+                                    {
+                                        licznik++;
+                                    }
+                                }
+                                if (licznik > max_licznik)
+                                {
+                                    max_licznik = licznik;
+                                    max_wartosc = wartosc;
+                                }
+                                licznik = 0;
+
+                            }
+                            tab1[i, j] = max_wartosc;
+                            max_wartosc = 0;
+                        }
+                        else
+                            tab1[i, j] = tab[i, j];
+                    }
+                }
+
+                return tab1;
+            }
+
+            public int[,] sprawdz_warunki_brzegowe_heksagonalne_lewe_periodyczne(int[,] tab, int m, int n)
+            {
+                int[,] tab1 = new int[m, n];
+                for (int i = 0; i < m; i++)
+                    for (int j = 0; j < n; j++)
+                        tab1[i, j] = 0;
+
+                int wartosc = 0;
+                int max_wartosc = 0;
+                int licznik = 0;
+                int max_licznik = 0;
+                int[] zbior;
+                zbior = new int[7];
+                for (int i = 0; i < m; i++)
+                {
+                    for (int j = 0; j < n; j++)
+                    {
+                        wartosc = 0; licznik = 0; max_licznik = 0;
+                        if (tab[i, j] == 0)
+                        {
+                            if (j == 0 & i != 0 && i != m - 1)
+                            {
+                                zbior[0] = 0; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i - 1, j + 1]; zbior[3] = 0; zbior[4] = tab[i, j]; zbior[5] = tab[i, j + 1]; zbior[6] = 0;
+                            }
+                            else if (j == n - 1 && i != 0 && i != m - 1)
+                            {
+                                zbior[0] = tab[i - 1, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = 0; zbior[3] = tab[i, j - 1]; zbior[4] = tab[i, j]; zbior[5] = 0; zbior[6] = tab[i + 1, j - 1];
+                            }
+                            else if (i == 0 && j != 0 && j != n - 1)
+                            {
+                                zbior[0] = 0; zbior[1] = 0; zbior[2] = 0; zbior[3] = tab[i, j - 1]; zbior[4] = tab[i, j]; zbior[5] = tab[i, j + 1]; zbior[6] = tab[i + 1, j - 1]; 
+                            }
+                            else if (i == m - 1 && j != 0 && j != n - 1)
+                            {
+                                zbior[0] = tab[i - 1, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i - 1, j + 1]; zbior[3] = tab[i, j - 1]; zbior[4] = tab[i, j]; zbior[5] = tab[i, j + 1]; zbior[6] = 0; 
+                            }
+                            else if (i == 0 && j == 0)
+                            {
+                                zbior[0] = 0; zbior[1] = 0; zbior[2] = 0; zbior[3] = 0; zbior[4] = tab[i, j]; zbior[5] = tab[i, j + 1]; zbior[6] = 0; 
+                            }
+                            else if (i == 0 && j == n - 1)
+                            {
+                                zbior[0] = 0; zbior[1] = 0; zbior[2] = 0; zbior[3] = tab[i, j - 1]; zbior[4] = tab[i, j]; zbior[5] = 0; zbior[6] = tab[i + 1, j - 1]; 
+                            }
+                            else if (i == m - 1 && j == n - 1)
+                            {
+                                zbior[0] = tab[i - 1, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = 0; zbior[3] = tab[i, j - 1]; zbior[4] = tab[i, j]; zbior[5] = 0; zbior[6] = 0; 
+                            }
+                            else if (i == m - 1 && j == 0)
+                            {
+                                zbior[0] = 0; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i - 1, j + 1]; zbior[3] = 0; zbior[4] = tab[i, j]; zbior[5] = tab[i, j + 1]; zbior[6] = 0; 
+                            }
+                            else
+                            {
+                                zbior[0] = tab[i - 1, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i - 1, j + 1]; zbior[3] = tab[i, j - 1]; zbior[4] = tab[i, j]; zbior[5] = tab[i, j + 1]; zbior[6] = tab[i + 1, j - 1]; 
+                            }
+                            for (int l = 0; l < 9; l++)
+                            {
+                                wartosc = zbior[l];
+                                for (int k = 0; k < 9; k++)
+                                {
+                                    if (wartosc == zbior[k] && zbior[k] != 0)
+                                    {
+                                        licznik++;
+                                    }
+                                }
+                                if (licznik > max_licznik)
+                                {
+                                    max_licznik = licznik;
+                                    max_wartosc = wartosc;
+                                }
+                                licznik = 0;
+
+                            }
+                            tab1[i, j] = max_wartosc;
+                            max_wartosc = 0;
+                        }
+                        else
+                            tab1[i, j] = tab[i, j];
                     }
                 }
 
@@ -565,6 +1289,11 @@ namespace Modelowanie_wieloskalowe
             comboBox3.Items.AddRange(lista3);
             this.Controls.Add(this.comboBox3);
             this.comboBox3.SelectedIndexChanged += new System.EventHandler(comboBox3_SelectedIndexChanged);
+
+            string[] lista4 = new string[] { "Von Neumann", "Moore", "Pentagonalne Lewe", "Pentagonalne Prawe", "Pentagonalne Gorne", "Pentagonalne Dolne", "Pentagonalne Losowe", "Heksagonalne Lewe", "Heksagonalne Prawe", "Heksagonalne Losowe", "Z promieniem" };
+            comboBox4.Items.AddRange(lista4);
+            this.Controls.Add(this.comboBox4);
+            this.comboBox4.SelectedIndexChanged += new System.EventHandler(comboBox4_SelectedIndexChanged);
         }
 
 
@@ -917,6 +1646,11 @@ namespace Modelowanie_wieloskalowe
             }
         }
 
+        private void comboBox4_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
         private void label3_Click(object sender, EventArgs e)
         {
 
@@ -945,9 +1679,61 @@ namespace Modelowanie_wieloskalowe
                     }
                 }
                 if (periodyczne)
-                    tablica = s.sprawdz_warunki_brzeogwe_vonNeymana_periodyczne(tablica, r2, r1);
+                {
+                    if (vonNeumann)
+                        tablica = s.sprawdz_warunki_brzeogwe_vonNeymana_periodyczne(tablica, r2, r1);
+                    else if (moore)
+                        tablica = s.sprawdz_warunki_brzegowe_moor_periodyczne(tablica, r2, r1);
+                    else if (pentagonalne_lewe)
+                        tablica = s.sprawdz_warunki_brzegowe_pentagonalne_lewe_periodyczne(tablica, r2, r1);
+                    else if (pentagonalne_prawe)
+                        tablica = s.sprawdz_warunki_brzegowe_pentagonalne_prawe_periodyczne(tablica, r2, r1);
+                    else if (pentagonalne_gorne)
+                        tablica = s.sprawdz_warunki_brzegowe_pentagonalne_gorne_periodyczne(tablica, r2, r1);
+                    else if (pentagonalne_dolne)
+                        tablica = s.sprawdz_warunki_brzegowe_pentagonalne_dolne_periodyczne(tablica, r2, r1);
+                    else if (pentagonalne_losowe)
+                    {
+                        int c = random.Next(1, 5);
+                        if (c == 1)
+                            tablica = s.sprawdz_warunki_brzegowe_pentagonalne_lewe_periodyczne(tablica, r2, r1);
+                        else if (c == 2)
+                            tablica = s.sprawdz_warunki_brzegowe_pentagonalne_prawe_periodyczne(tablica, r2, r1);
+                        else if (c == 3)
+                            tablica = s.sprawdz_warunki_brzegowe_pentagonalne_gorne_periodyczne(tablica, r2, r1);
+                        else
+                            tablica = s.sprawdz_warunki_brzegowe_pentagonalne_dolne_periodyczne(tablica, r2, r1);
+                    }
+                    else if (heksagonalne_lewe)
+                        tablica = s.sprawdz_warunki_brzegowe_heksagonalne_lewe_periodyczne(tablica, r2, r1);
+                }
                 else//absorbujace
-                    tablica = s.sprawdz_warunki_brzeogwe_vonNeymana_absorbujace(tablica, r2, r1);
+                {
+                    if (vonNeumann)
+                        tablica = s.sprawdz_warunki_brzeogwe_vonNeymana_absorbujace(tablica, r2, r1);
+                    else if (moore)
+                        tablica = s.sprawdz_warunki_brzegowe_moor_absorbujace(tablica, r2, r1);
+                    else if (pentagonalne_lewe)
+                        tablica = s.sprawdz_warunki_brzegowe_pentagonalne_lewe_absorbujace(tablica, r2, r1);
+                    else if (pentagonalne_prawe)
+                        tablica = s.sprawdz_warunki_brzegowe_pentagonalne_prawe_absorbujace(tablica, r2, r1);
+                    else if (pentagonalne_gorne)
+                        tablica = s.sprawdz_warunki_brzegowe_pentagonalne_gorne_absorbujace(tablica, r2, r1);
+                    else if (pentagonalne_dolne)
+                        tablica = s.sprawdz_warunki_brzegowe_pentagonalne_dolne_absorbujace(tablica, r2, r1);
+                    else if(pentagonalne_losowe)
+                    {
+                        int c = random.Next(1, 5);
+                        if (c == 1)
+                            tablica = s.sprawdz_warunki_brzegowe_pentagonalne_lewe_absorbujace(tablica, r2, r1);
+                        else if (c == 2)
+                            tablica = s.sprawdz_warunki_brzegowe_pentagonalne_prawe_absorbujace(tablica, r2, r1);
+                        else if (c == 3)
+                            tablica = s.sprawdz_warunki_brzegowe_pentagonalne_gorne_absorbujace(tablica, r2, r1);
+                        else
+                            tablica = s.sprawdz_warunki_brzegowe_pentagonalne_dolne_absorbujace(tablica, r2, r1);
+                    }
+                }
                 pictureBox1.Image = DrawArea;
                 grp.Dispose();
             }
@@ -967,6 +1753,30 @@ namespace Modelowanie_wieloskalowe
             for (int i = 0; i < r2; i++)
                 for (int j = 0; j < r1; j++)
                     tablica[i, j] = 0;
+
+            string sasiadztwo = comboBox4.SelectedItem.ToString();
+            if (sasiadztwo == "Von Neumann")
+                vonNeumann = true;
+            else if (sasiadztwo == "Moore")
+                moore = true;
+            else if (sasiadztwo == "Pentagonalne Lewe")
+                pentagonalne_lewe = true;
+            else if (sasiadztwo == "Pentagonalne Prawe")
+                pentagonalne_prawe = true;
+            else if (sasiadztwo == "Pentagonalne Gorne")
+                pentagonalne_gorne = true;
+            else if (sasiadztwo == "Pentagonalne Dolne")
+                pentagonalne_dolne = true;
+            else if (sasiadztwo == "Pentagonalne Losowe")
+                pentagonalne_losowe = true;
+            else if (sasiadztwo == "Heksagonalne Lewe")
+                heksagonalne_lewe = true;
+            else if (sasiadztwo == "Heksagonalne Prawe")
+                heksagonalne_prawe = true;
+            else if (sasiadztwo == "Heksagonalne Losowe")
+                heksagonalne_losowe = true;
+            else if (sasiadztwo == "Z promieniem ")
+                promien = true;
 
             string tekst = comboBox3.SelectedItem.ToString();
             if(tekst == "Jednorodne")

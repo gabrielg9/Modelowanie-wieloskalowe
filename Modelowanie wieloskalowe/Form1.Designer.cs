@@ -49,6 +49,7 @@
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.checkBox2 = new System.Windows.Forms.CheckBox();
             this.button6 = new System.Windows.Forms.Button();
+            this.comboBox4 = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -187,7 +188,7 @@
             // 
             // button3
             // 
-            this.button3.Location = new System.Drawing.Point(12, 431);
+            this.button3.Location = new System.Drawing.Point(13, 451);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(152, 37);
             this.button3.TabIndex = 15;
@@ -239,7 +240,7 @@
             // 
             // button6
             // 
-            this.button6.Location = new System.Drawing.Point(171, 431);
+            this.button6.Location = new System.Drawing.Point(171, 451);
             this.button6.Name = "button6";
             this.button6.Size = new System.Drawing.Size(51, 37);
             this.button6.TabIndex = 20;
@@ -247,11 +248,21 @@
             this.button6.UseVisualStyleBackColor = true;
             this.button6.Click += new System.EventHandler(this.button6_Click);
             // 
+            // comboBox4
+            // 
+            this.comboBox4.FormattingEnabled = true;
+            this.comboBox4.Location = new System.Drawing.Point(13, 424);
+            this.comboBox4.Name = "comboBox4";
+            this.comboBox4.Size = new System.Drawing.Size(150, 21);
+            this.comboBox4.TabIndex = 21;
+            this.comboBox4.SelectedIndexChanged += new System.EventHandler(this.comboBox4_SelectedIndexChanged);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(891, 634);
+            this.Controls.Add(this.comboBox4);
             this.Controls.Add(this.button6);
             this.Controls.Add(this.checkBox2);
             this.Controls.Add(this.checkBox1);
@@ -305,6 +316,7 @@
         private System.Windows.Forms.CheckBox checkBox1;
         private System.Windows.Forms.CheckBox checkBox2;
         private System.Windows.Forms.Button button6;
+        private System.Windows.Forms.ComboBox comboBox4;
     }
 }
 

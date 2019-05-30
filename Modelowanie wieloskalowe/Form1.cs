@@ -2087,16 +2087,53 @@ namespace Modelowanie_wieloskalowe
             }
             else if(tekst == "Z promieniem")
             {
+                bool poprawne = true;
+                double odleglosc = 0.0;
+                double d = 0.0;
                 g.Clear(Color.DarkGray);
                 int promien = int.Parse(textBox3.Text);
                 int ilosc = int.Parse(textBox4.Text);
                 Random rand = new Random();
-                for (int i = 1; i < ilosc + 1; i++)
+                
+                for (int k = 1; k < ilosc + 1; k++)
                 {
+                    odleglosc = 0.0;
                     int a = rand.Next(r2);
                     int b = rand.Next(r1);
+                    poprawne = true;
                     if (tablica[a, b] == 0)
-                        tablica[a, b] = i;
+                    {
+                        for(int i=0; i<r2; i++)
+                        {
+                            for(int j=0; j<r1; j++)
+                            {
+                                if(tablica[i,j]!=0)
+                                {
+                                    d = (i*size_y - a*size_y) * (i*size_y - a*size_y) + (j*size_x - b*size_x) * (j*size_x - b*size_x);
+                                    odleglosc = Math.Sqrt(d);
+                                    if (odleglosc > 2 * promien*size_x)
+                                        poprawne = true;
+                                    else
+                                    {
+                                        poprawne = false;
+                                    }
+                                }
+                                if (poprawne == false)
+                                    break;
+                            }
+                            if (poprawne == false)
+                            {
+                                if(k>1)
+                                    k--;
+                                break;
+                            }
+                        }
+                        if (poprawne)
+                            tablica[a, b] = k;
+                        
+                        //
+                           // k--;
+                    }
                 }
                 if (rozrost_ziaren)
                 {

@@ -50,6 +50,11 @@
             this.checkBox2 = new System.Windows.Forms.CheckBox();
             this.button6 = new System.Windows.Forms.Button();
             this.comboBox4 = new System.Windows.Forms.ComboBox();
+            this.button7 = new System.Windows.Forms.Button();
+            this.button8 = new System.Windows.Forms.Button();
+            this.checkBox3 = new System.Windows.Forms.CheckBox();
+            this.checkBox4 = new System.Windows.Forms.CheckBox();
+            this.button9 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -257,11 +262,68 @@
             this.comboBox4.TabIndex = 21;
             this.comboBox4.SelectedIndexChanged += new System.EventHandler(this.comboBox4_SelectedIndexChanged);
             // 
+            // button7
+            // 
+            this.button7.Location = new System.Drawing.Point(169, 494);
+            this.button7.Name = "button7";
+            this.button7.Size = new System.Drawing.Size(53, 24);
+            this.button7.TabIndex = 22;
+            this.button7.Text = "Stop";
+            this.button7.UseVisualStyleBackColor = true;
+            this.button7.Click += new System.EventHandler(this.button7_Click);
+            // 
+            // button8
+            // 
+            this.button8.Location = new System.Drawing.Point(13, 542);
+            this.button8.Name = "button8";
+            this.button8.Size = new System.Drawing.Size(150, 37);
+            this.button8.TabIndex = 23;
+            this.button8.Text = "Monte Carlo";
+            this.button8.UseVisualStyleBackColor = true;
+            this.button8.Click += new System.EventHandler(this.button8_Click);
+            // 
+            // checkBox3
+            // 
+            this.checkBox3.AutoSize = true;
+            this.checkBox3.Location = new System.Drawing.Point(13, 519);
+            this.checkBox3.Name = "checkBox3";
+            this.checkBox3.Size = new System.Drawing.Size(88, 17);
+            this.checkBox3.TabIndex = 24;
+            this.checkBox3.Text = "Von Neuman";
+            this.checkBox3.UseVisualStyleBackColor = true;
+            this.checkBox3.CheckedChanged += new System.EventHandler(this.checkBox3_CheckedChanged);
+            // 
+            // checkBox4
+            // 
+            this.checkBox4.AutoSize = true;
+            this.checkBox4.Location = new System.Drawing.Point(107, 519);
+            this.checkBox4.Name = "checkBox4";
+            this.checkBox4.Size = new System.Drawing.Size(56, 17);
+            this.checkBox4.TabIndex = 25;
+            this.checkBox4.Text = "Moore";
+            this.checkBox4.UseVisualStyleBackColor = true;
+            this.checkBox4.CheckedChanged += new System.EventHandler(this.checkBox4_CheckedChanged);
+            // 
+            // button9
+            // 
+            this.button9.Location = new System.Drawing.Point(171, 542);
+            this.button9.Name = "button9";
+            this.button9.Size = new System.Drawing.Size(51, 37);
+            this.button9.TabIndex = 26;
+            this.button9.Text = "Stop";
+            this.button9.UseVisualStyleBackColor = true;
+            this.button9.Click += new System.EventHandler(this.button9_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(891, 634);
+            this.Controls.Add(this.button9);
+            this.Controls.Add(this.checkBox4);
+            this.Controls.Add(this.checkBox3);
+            this.Controls.Add(this.button8);
+            this.Controls.Add(this.button7);
             this.Controls.Add(this.comboBox4);
             this.Controls.Add(this.button6);
             this.Controls.Add(this.checkBox2);
@@ -317,6 +379,11 @@
         private System.Windows.Forms.CheckBox checkBox2;
         private System.Windows.Forms.Button button6;
         private System.Windows.Forms.ComboBox comboBox4;
+        private System.Windows.Forms.Button button7;
+        private System.Windows.Forms.Button button8;
+        private System.Windows.Forms.CheckBox checkBox3;
+        private System.Windows.Forms.CheckBox checkBox4;
+        private System.Windows.Forms.Button button9;
     }
 }
 

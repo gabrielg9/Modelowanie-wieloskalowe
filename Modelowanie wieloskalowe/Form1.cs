@@ -31,6 +31,9 @@ namespace Modelowanie_wieloskalowe
         bool periodyczne;
         bool absorbujace;
         bool rozrost_ziaren;
+        bool mc;
+        bool von_Nemann_mc;
+        bool moor_mc;
         bool vonNeumann;
         bool moore;
         bool pentagonalne_lewe;
@@ -1525,6 +1528,560 @@ namespace Modelowanie_wieloskalowe
 
                 return tab1;
             }
+
+            public int[,] monte_carlo_von_neumann_periodyczne(int[,] tab, int m, int n)
+            {
+                int[,] tab1 = new int[m, n];
+                for (int p = 0; p < m; p++)
+                    for (int u = 0; u < n; u++)
+                        tab1[p, u] = 0;
+
+                int ilosc_punktow = m * n;
+                int ilosc_punktow_for = ilosc_punktow;
+                int[] tablica_punktow = new int[ilosc_punktow];
+                for (int b = 0; b < ilosc_punktow; b++)
+                    tablica_punktow[b] = b;
+
+                Random rand = new Random();
+                int x = 0;
+                int i = 0, j = 0, energia_przed = 0, energia_po = 0, roznica_energii = 0;
+                int poprzedni_kolor = 0;
+                int[] zbior;
+                zbior = new int[4];
+
+                void funkcja_przed()
+                {
+                    if (zbior[0] != tab[i, j])
+                        energia_przed++;
+                    if (zbior[1] != tab[i, j])
+                        energia_przed++;
+                    if (zbior[2] != tab[i, j])
+                        energia_przed++;
+                    if (zbior[3] != tab[i, j])
+                        energia_przed++;
+                }
+                void funkcja_po()
+                {
+                    if (zbior[0] != tab[i, j])
+                        energia_po++;
+                    if (zbior[1] != tab[i, j])
+                        energia_po++;
+                    if (zbior[2] != tab[i, j])
+                        energia_po++;
+                    if (zbior[3] != tab[i, j])
+                        energia_po++;
+                }
+
+                for (int r=0; r<ilosc_punktow_for; r++)
+                {
+                    x = tablica_punktow[rand.Next(ilosc_punktow)];
+                    i = x / m;
+                    j = x % n;
+                    poprzedni_kolor = tab[i, j];
+                    energia_po = 0;
+                    energia_przed = 0;
+                    roznica_energii = 0;
+
+                    if (j == 0 & i != 0 && i != m - 1)
+                    {
+                        zbior[0] = tab[i, n - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i, j + 1]; zbior[3] = tab[i + 1, j];
+                    }
+                    else if (j == n - 1 && i != 0 && i != m - 1)
+                    {
+                        zbior[0] = tab[i, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i, 0]; zbior[3] = tab[i + 1, j];
+                    }
+                    else if (i == 0 && j != 0 && j != n - 1)
+                    {
+                        zbior[0] = tab[i, j - 1]; zbior[1] = tab[m - 1, j]; zbior[2] = tab[i, j + 1]; zbior[3] = tab[i + 1, j];
+                    }
+                    else if (i == m - 1 && j != 0 && j != n - 1)
+                    {
+                        zbior[0] = tab[i, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i, j + 1]; zbior[3] = tab[0, j];
+                    }
+                    else if (i == 0 && j == 0)
+                    {
+                        zbior[0] = tab[i, n - 1]; zbior[1] = tab[m - 1, j]; zbior[2] = tab[i, j + 1]; zbior[3] = tab[i + 1, j];
+                    }
+                    else if (i == 0 && j == n - 1)
+                    {
+                        zbior[0] = tab[i, j - 1]; zbior[1] = tab[m - 1, j]; zbior[2] = tab[i, 0]; zbior[3] = tab[i + 1, j];
+                    }
+                    else if (i == m - 1 && j == n - 1)
+                    {
+                        zbior[0] = tab[i, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i, 0]; zbior[3] = tab[0, j];
+                    }
+                    else if (i == m - 1 && j == 0)
+                    {
+                        zbior[0] = tab[i, n - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i, j + 1]; zbior[3] = tab[0, j];
+                    }
+                    else
+                    {
+                        zbior[0] = tab[i, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i, j + 1]; zbior[3] = tab[i + 1, j];
+                    }
+
+                    funkcja_przed();
+                    switch (rand.Next(4))
+                    {
+                        case 0:
+                            tab[i, j] = zbior[0];
+                            break;
+                        case 1:
+                            tab[i, j] = zbior[1];
+                            break;
+                        case 2:
+                            tab[i, j] = zbior[2];
+                            break;
+                        case 3:
+                            tab[i, j] = zbior[3];
+                            break;
+                    }
+                    funkcja_po();
+                    roznica_energii = energia_po - energia_przed;
+                    if (roznica_energii <= 0)
+                        tab[i, j] = tab[i, j];
+                    else
+                        tab[i, j] = poprzedni_kolor;
+                          
+
+                    tablica_punktow[x] = tablica_punktow[ilosc_punktow - 1];
+                    ilosc_punktow--;
+                }
+
+                return tab;
+            }
+
+            public int[,] monte_carlo_von_neumann_absorbujace(int[,] tab, int m, int n)
+            {
+                int[,] tab1 = new int[m, n];
+                for (int p = 0; p < m; p++)
+                    for (int u = 0; u < n; u++)
+                        tab1[p, u] = 0;
+
+                int ilosc_punktow = m * n;
+                int ilosc_punktow_for = ilosc_punktow;
+                int[] tablica_punktow = new int[ilosc_punktow];
+                for (int b = 0; b < ilosc_punktow; b++)
+                    tablica_punktow[b] = b;
+
+                Random rand = new Random();
+                int x = 0;
+                int i = 0, j = 0, energia_przed = 0, energia_po = 0, roznica_energii = 0;
+                int poprzedni_kolor = 0;
+                int[] zbior;
+                zbior = new int[4];
+
+                void funkcja_przed()
+                {
+                    if (zbior[0] != tab[i, j])
+                        energia_przed++;
+                    if (zbior[1] != tab[i, j])
+                        energia_przed++;
+                    if (zbior[2] != tab[i, j])
+                        energia_przed++;
+                    if (zbior[3] != tab[i, j])
+                        energia_przed++;
+                }
+                void funkcja_po()
+                {
+                    if (zbior[0] != tab[i, j])
+                        energia_po++;
+                    if (zbior[1] != tab[i, j])
+                        energia_po++;
+                    if (zbior[2] != tab[i, j])
+                        energia_po++;
+                    if (zbior[3] != tab[i, j])
+                        energia_po++;
+                }
+
+                for (int r = 0; r < ilosc_punktow_for; r++)
+                {
+                    x = tablica_punktow[rand.Next(ilosc_punktow)];
+                    i = x / m;
+                    j = x % n;
+                    poprzedni_kolor = tab[i, j];
+                    energia_po = 0;
+                    energia_przed = 0;
+                    roznica_energii = 0;
+
+                    if (j == 0 & i != 0 && i != m - 1)
+                    {
+                        zbior[0] = tab[i, j]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i, j + 1]; zbior[3] = tab[i + 1, j];
+                    }
+                    else if (j == n - 1 && i != 0 && i != m - 1)
+                    {
+                        zbior[0] = tab[i, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i, j]; zbior[3] = tab[i + 1, j];
+                    }
+                    else if (i == 0 && j != 0 && j != n - 1)
+                    {
+                        zbior[0] = tab[i, j - 1]; zbior[1] = tab[i, j]; zbior[2] = tab[i, j + 1]; zbior[3] = tab[i + 1, j];
+                    }
+                    else if (i == m - 1 && j != 0 && j != n - 1)
+                    {
+                        zbior[0] = tab[i, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i, j + 1]; zbior[3] = tab[i, j];
+                    }
+                    else if (i == 0 && j == 0)
+                    {
+                        zbior[0] = tab[i, j]; zbior[1] = tab[i, j]; zbior[2] = tab[i, j + 1]; zbior[3] = tab[i + 1, j];
+                    }
+                    else if (i == 0 && j == n - 1)
+                    {
+                        zbior[0] = tab[i, j - 1]; zbior[1] = tab[i, j]; zbior[2] = tab[i, j]; zbior[3] = tab[i + 1, j];
+                    }
+                    else if (i == m - 1 && j == n - 1)
+                    {
+                        zbior[0] = tab[i, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i, j]; zbior[3] = tab[i, j];
+                    }
+                    else if (i == m - 1 && j == 0)
+                    {
+                        zbior[0] = tab[i, j]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i, j + 1]; zbior[3] = tab[i, j];
+                    }
+                    else
+                    {
+                        zbior[0] = tab[i, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i, j + 1]; zbior[3] = tab[i + 1, j];
+                    }
+
+                    funkcja_przed();
+                    switch (rand.Next(4))
+                    {
+                        case 0:
+                            tab[i, j] = zbior[0];
+                            break;
+                        case 1:
+                            tab[i, j] = zbior[1];
+                            break;
+                        case 2:
+                            tab[i, j] = zbior[2];
+                            break;
+                        case 3:
+                            tab[i, j] = zbior[3];
+                            break;
+                    }
+                    funkcja_po();
+                    roznica_energii = energia_po - energia_przed;
+                    if (roznica_energii <= 0)
+                        tab[i, j] = tab[i, j];
+                    else
+                        tab[i, j] = poprzedni_kolor;
+
+
+                    tablica_punktow[x] = tablica_punktow[ilosc_punktow - 1];
+                    ilosc_punktow--;
+                }
+
+                return tab;
+            }
+
+            public int[,] monte_carlo_moor_periodyczne(int[,] tab, int m, int n)
+            {
+                int[,] tab1 = new int[m, n];
+                for (int p = 0; p < m; p++)
+                    for (int u = 0; u < n; u++)
+                        tab1[p, u] = 0;
+
+                int ilosc_punktow = m * n;
+                int ilosc_punktow_for = ilosc_punktow;
+                int[] tablica_punktow = new int[ilosc_punktow];
+                for (int b = 0; b < ilosc_punktow; b++)
+                    tablica_punktow[b] = b;
+
+                Random rand = new Random();
+                int x = 0;
+                int i = 0, j = 0, energia_przed = 0, energia_po = 0, roznica_energii = 0;
+                int poprzedni_kolor = 0;
+                int[] zbior;
+                zbior = new int[9];
+
+                void funkcja_przed()
+                {
+                    if (zbior[0] != tab[i, j])
+                        energia_przed++;
+                    if (zbior[1] != tab[i, j])
+                        energia_przed++;
+                    if (zbior[2] != tab[i, j])
+                        energia_przed++;
+                    if (zbior[3] != tab[i, j])
+                        energia_przed++;
+                    if (zbior[4] != tab[i, j])
+                        energia_przed++;
+                    if (zbior[5] != tab[i, j])
+                        energia_przed++;
+                    if (zbior[6] != tab[i, j])
+                        energia_przed++;
+                    if (zbior[7] != tab[i, j])
+                        energia_przed++;
+                    if (zbior[8] != tab[i, j])
+                        energia_przed++;
+                }
+                void funkcja_po()
+                {
+                    if (zbior[0] != tab[i, j])
+                        energia_po++;
+                    if (zbior[1] != tab[i, j])
+                        energia_po++;
+                    if (zbior[2] != tab[i, j])
+                        energia_po++;
+                    if (zbior[3] != tab[i, j])
+                        energia_po++;
+                    if (zbior[4] != tab[i, j])
+                        energia_po++;
+                    if (zbior[5] != tab[i, j])
+                        energia_po++;
+                    if (zbior[6] != tab[i, j])
+                        energia_po++;
+                    if (zbior[7] != tab[i, j])
+                        energia_po++;
+                    if (zbior[8] != tab[i, j])
+                        energia_po++;
+                }
+
+                for (int r = 0; r < ilosc_punktow_for; r++)
+                {
+                    x = tablica_punktow[rand.Next(ilosc_punktow)];
+                    i = x / m;
+                    j = x % n;
+                    poprzedni_kolor = tab[i, j];
+                    energia_po = 0;
+                    energia_przed = 0;
+                    roznica_energii = 0;
+
+                    if (j == 0 & i != 0 && i != m - 1)
+                    {
+                        zbior[0] = tab[i-1,n-1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i - 1, j + 1]; zbior[3] = tab[i,n-1]; zbior[4] = tab[i, j]; zbior[5] = tab[i, j + 1]; zbior[6] = tab[i+1,n-1]; zbior[7] = tab[i + 1, j]; zbior[8] = tab[i + 1, j + 1];
+                    }
+                    else if (j == n - 1 && i != 0 && i != m - 1)
+                    {
+                        zbior[0] = tab[i - 1, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i-1,0]; zbior[3] = tab[i, j - 1]; zbior[4] = tab[i, j]; zbior[5] = tab[i,0]; zbior[6] = tab[i + 1, j - 1]; zbior[7] = tab[i + 1, j]; zbior[8] = tab[i+1,0];
+                    }
+                    else if (i == 0 && j != 0 && j != n - 1)
+                    {
+                        zbior[0] = tab[m-1,j-1]; zbior[1] = tab[m-1,j]; zbior[2] = tab[m-1,j+1]; zbior[3] = tab[i, j - 1]; zbior[4] = tab[i, j]; zbior[5] = tab[i, j + 1]; zbior[6] = tab[i + 1, j - 1]; zbior[7] = tab[i + 1, j]; zbior[8] = tab[i + 1, j + 1];
+                    }
+                    else if (i == m - 1 && j != 0 && j != n - 1)
+                    {
+                        zbior[0] = tab[i - 1, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i - 1, j + 1]; zbior[3] = tab[i, j - 1]; zbior[4] = tab[i, j]; zbior[5] = tab[i, j + 1]; zbior[6] = tab[0,j-1]; zbior[7] = tab[0,j]; zbior[8] = tab[0,j+1];
+                    }
+                    else if (i == 0 && j == 0)
+                    {
+                        zbior[0] = tab[m-1,n-1]; zbior[1] = tab[m-1,j]; zbior[2] = tab[m-1,j+1]; zbior[3] = tab[i,n-1]; zbior[4] = tab[i, j]; zbior[5] = tab[i, j + 1]; zbior[6] = tab[i,n-1]; zbior[7] = tab[i + 1, j]; zbior[8] = tab[i + 1, j + 1];
+                    }
+                    else if (i == 0 && j == n - 1)
+                    {
+                        zbior[0] = tab[m-1,j-1]; zbior[1] = tab[m-1,j]; zbior[2] = tab[m-1,0]; zbior[3] = tab[i, j - 1]; zbior[4] = tab[i, j]; zbior[5] = tab[i,0]; zbior[6] = tab[i + 1, j - 1]; zbior[7] = tab[i + 1, j]; zbior[8] = tab[i+1,0];
+                    }
+                    else if (i == m - 1 && j == n - 1)
+                    {
+                        zbior[0] = tab[i - 1, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i-1,0]; zbior[3] = tab[i, j - 1]; zbior[4] = tab[i, j]; zbior[5] = tab[i,0]; zbior[6] = tab[0,j-1]; zbior[7] = tab[0,j]; zbior[8] = tab[0,0];
+                    }
+                    else if (i == m - 1 && j == 0)
+                    {
+                        zbior[0] = tab[i-1,n-1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i - 1, j + 1]; zbior[3] = tab[i,n-1]; zbior[4] = tab[i, j]; zbior[5] = tab[i, j + 1]; zbior[6] = tab[0,n-1]; zbior[7] = tab[0,j]; zbior[8] = tab[0,j+1];
+                    }
+                    else
+                    {
+                        zbior[0] = tab[i - 1, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i - 1, j + 1]; zbior[3] = tab[i, j - 1]; zbior[4] = tab[i, j]; zbior[5] = tab[i, j + 1]; zbior[6] = tab[i + 1, j - 1]; zbior[7] = tab[i + 1, j]; zbior[8] = tab[i + 1, j + 1];
+                    }
+
+                    funkcja_przed();
+                    switch (rand.Next(9))
+                    {
+                        case 0:
+                            tab[i, j] = zbior[0];
+                            break;
+                        case 1:
+                            tab[i, j] = zbior[1];
+                            break;
+                        case 2:
+                            tab[i, j] = zbior[2];
+                            break;
+                        case 3:
+                            tab[i, j] = zbior[3];
+                            break;
+                        case 4:
+                            tab[i, j] = zbior[4];
+                            break;
+                        case 5:
+                            tab[i, j] = zbior[5];
+                            break;
+                        case 6:
+                            tab[i, j] = zbior[6];
+                            break;
+                        case 7:
+                            tab[i, j] = zbior[7];
+                            break;
+                        case 8:
+                            tab[i, j] = zbior[8];
+                            break;
+                    }
+                    funkcja_po();
+                    roznica_energii = energia_po - energia_przed;
+                    if (roznica_energii <= 0)
+                        tab[i, j] = tab[i, j];
+                    else
+                        tab[i, j] = poprzedni_kolor;
+
+
+                    tablica_punktow[x] = tablica_punktow[ilosc_punktow - 1];
+                    ilosc_punktow--;
+                }
+
+                return tab;
+            }
+
+            public int[,] monte_carlo_moor_absorbujace(int[,] tab, int m, int n)
+            {
+                int[,] tab1 = new int[m, n];
+                for (int p = 0; p < m; p++)
+                    for (int u = 0; u < n; u++)
+                        tab1[p, u] = 0;
+
+                int ilosc_punktow = m * n;
+                int ilosc_punktow_for = ilosc_punktow;
+                int[] tablica_punktow = new int[ilosc_punktow];
+                for (int b = 0; b < ilosc_punktow; b++)
+                    tablica_punktow[b] = b;
+
+                Random rand = new Random();
+                int x = 0;
+                int i = 0, j = 0, energia_przed = 0, energia_po = 0, roznica_energii = 0;
+                int poprzedni_kolor = 0;
+                int[] zbior;
+                zbior = new int[9];
+
+                void funkcja_przed()
+                {
+                    if (zbior[0] != tab[i, j])
+                        energia_przed++;
+                    if (zbior[1] != tab[i, j])
+                        energia_przed++;
+                    if (zbior[2] != tab[i, j])
+                        energia_przed++;
+                    if (zbior[3] != tab[i, j])
+                        energia_przed++;
+                    if (zbior[4] != tab[i, j])
+                        energia_przed++;
+                    if (zbior[5] != tab[i, j])
+                        energia_przed++;
+                    if (zbior[6] != tab[i, j])
+                        energia_przed++;
+                    if (zbior[7] != tab[i, j])
+                        energia_przed++;
+                    if (zbior[8] != tab[i, j])
+                        energia_przed++;
+                }
+                void funkcja_po()
+                {
+                    if (zbior[0] != tab[i, j])
+                        energia_po++;
+                    if (zbior[1] != tab[i, j])
+                        energia_po++;
+                    if (zbior[2] != tab[i, j])
+                        energia_po++;
+                    if (zbior[3] != tab[i, j])
+                        energia_po++;
+                    if (zbior[4] != tab[i, j])
+                        energia_po++;
+                    if (zbior[5] != tab[i, j])
+                        energia_po++;
+                    if (zbior[6] != tab[i, j])
+                        energia_po++;
+                    if (zbior[7] != tab[i, j])
+                        energia_po++;
+                    if (zbior[8] != tab[i, j])
+                        energia_po++;
+                }
+
+                for (int r = 0; r < ilosc_punktow_for; r++)
+                {
+                    x = tablica_punktow[rand.Next(ilosc_punktow)];
+                    i = x / m;
+                    j = x % n;
+                    poprzedni_kolor = tab[i, j];
+                    energia_po = 0;
+                    energia_przed = 0;
+                    roznica_energii = 0;
+
+                    if (j == 0 & i != 0 && i != m - 1)
+                    {
+                        zbior[0] = tab[i,j]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i - 1, j + 1]; zbior[3] = tab[i, j]; zbior[4] = tab[i, j]; zbior[5] = tab[i, j + 1]; zbior[6] = tab[i, j]; zbior[7] = tab[i + 1, j]; zbior[8] = tab[i + 1, j + 1];
+                    }
+                    else if (j == n - 1 && i != 0 && i != m - 1)
+                    {
+                        zbior[0] = tab[i - 1, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i, j]; zbior[3] = tab[i, j - 1]; zbior[4] = tab[i, j]; zbior[5] = tab[i, j]; zbior[6] = tab[i + 1, j - 1]; zbior[7] = tab[i + 1, j]; zbior[8] = tab[i, j];
+                    }
+                    else if (i == 0 && j != 0 && j != n - 1)
+                    {
+                        zbior[0] = tab[i, j]; zbior[1] = tab[i, j]; zbior[2] = tab[i, j]; zbior[3] = tab[i, j - 1]; zbior[4] = tab[i, j]; zbior[5] = tab[i, j + 1]; zbior[6] = tab[i + 1, j - 1]; zbior[7] = tab[i + 1, j]; zbior[8] = tab[i + 1, j + 1];
+                    }
+                    else if (i == m - 1 && j != 0 && j != n - 1)
+                    {
+                        zbior[0] = tab[i - 1, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i - 1, j + 1]; zbior[3] = tab[i, j - 1]; zbior[4] = tab[i, j]; zbior[5] = tab[i, j + 1]; zbior[6] = tab[i, j]; zbior[7] = tab[i, j]; zbior[8] = tab[i, j];
+                    }
+                    else if (i == 0 && j == 0)
+                    {
+                        zbior[0] = tab[i, j]; zbior[1] = tab[i, j]; zbior[2] = tab[i, j]; zbior[3] = tab[i, j]; zbior[4] = tab[i, j]; zbior[5] = tab[i, j + 1]; zbior[6] = tab[i, j]; zbior[7] = tab[i + 1, j]; zbior[8] = tab[i + 1, j + 1];
+                    }
+                    else if (i == 0 && j == n - 1)
+                    {
+                        zbior[0] = tab[i, j]; zbior[1] = tab[i, j]; zbior[2] = tab[i, j]; zbior[3] = tab[i, j - 1]; zbior[4] = tab[i, j]; zbior[5] = tab[i, j]; zbior[6] = tab[i + 1, j - 1]; zbior[7] = tab[i + 1, j]; zbior[8] = tab[i, j];
+                    }
+                    else if (i == m - 1 && j == n - 1)
+                    {
+                        zbior[0] = tab[i - 1, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i, j]; zbior[3] = tab[i, j - 1]; zbior[4] = tab[i, j]; zbior[5] = tab[i, j]; zbior[6] = tab[i, j]; zbior[7] = tab[i, j]; zbior[8] = tab[i, j];
+                    }
+                    else if (i == m - 1 && j == 0)
+                    {
+                        zbior[0] = tab[i, j]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i - 1, j + 1]; zbior[3] = tab[i, j]; zbior[4] = tab[i, j]; zbior[5] = tab[i, j + 1]; zbior[6] = tab[i, j]; zbior[7] = tab[i, j]; zbior[8] = tab[i, j];
+                    }
+                    else
+                    {
+                        zbior[0] = tab[i - 1, j - 1]; zbior[1] = tab[i - 1, j]; zbior[2] = tab[i - 1, j + 1]; zbior[3] = tab[i, j - 1]; zbior[4] = tab[i, j]; zbior[5] = tab[i, j + 1]; zbior[6] = tab[i + 1, j - 1]; zbior[7] = tab[i + 1, j]; zbior[8] = tab[i + 1, j + 1];
+                    }
+
+                    funkcja_przed();
+                    switch (rand.Next(9))
+                    {
+                        case 0:
+                            tab[i, j] = zbior[0];
+                            break;
+                        case 1:
+                            tab[i, j] = zbior[1];
+                            break;
+                        case 2:
+                            tab[i, j] = zbior[2];
+                            break;
+                        case 3:
+                            tab[i, j] = zbior[3];
+                            break;
+                        case 4:
+                            tab[i, j] = zbior[4];
+                            break;
+                        case 5:
+                            tab[i, j] = zbior[5];
+                            break;
+                        case 6:
+                            tab[i, j] = zbior[6];
+                            break;
+                        case 7:
+                            tab[i, j] = zbior[7];
+                            break;
+                        case 8:
+                            tab[i, j] = zbior[8];
+                            break;
+                    }
+                    funkcja_po();
+                    roznica_energii = energia_po - energia_przed;
+                    if (roznica_energii <= 0)
+                        tab[i, j] = tab[i, j];
+                    else
+                        tab[i, j] = poprzedni_kolor;
+
+
+                    tablica_punktow[x] = tablica_punktow[ilosc_punktow - 1];
+                    ilosc_punktow--;
+                }
+
+                return tab;
+            }
         }
         
 
@@ -1760,6 +2317,11 @@ namespace Modelowanie_wieloskalowe
                 rysuj_ziarna();
                 Thread.Sleep(1000);
             }
+            while(mc)
+            {
+                rysuj_monte_carlo();
+                Thread.Sleep(1000);
+            }
         }
 
         private void rysuj_gra_w_zycie()
@@ -1906,9 +2468,41 @@ namespace Modelowanie_wieloskalowe
 
         }
 
+        private void button7_Click(object sender, EventArgs e)
+        {
+            rozrost_ziaren = false;
+        }
+
+        private void button8_Click(object sender, EventArgs e)
+        {
+            mc = true;
+            if (mc)
+            {
+                Thread th = new Thread(nowy_watek);
+                th.Start();
+            }
+        }
+
         private void label3_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void checkBox3_CheckedChanged(object sender, EventArgs e)
+        {
+            von_Nemann_mc = true;
+            moor_mc = false;
+        }
+
+        private void checkBox4_CheckedChanged(object sender, EventArgs e)
+        {
+            von_Nemann_mc = false;
+            moor_mc = true;
+        }
+
+        private void button9_Click(object sender, EventArgs e)
+        {
+            mc = false;
         }
 
         private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)
@@ -2176,6 +2770,44 @@ namespace Modelowanie_wieloskalowe
                 }
                 pictureBox1.Image = DrawArea;
                 g.Dispose();
+            }
+        }
+
+        public void rysuj_monte_carlo()
+        {
+            pobierz_dane();
+            lock (g)
+            {
+                Graphics mon;
+                mon = Graphics.FromImage(DrawArea);
+                for (int i = 0; i < r2; i++)
+                {
+                    for (int j = 0; j < r1; j++)
+                    {
+                        for (int k = 0; k < 1000; k++)
+                        {
+                            if (tablica[i, j] == k)
+                                mon.FillRectangle(solidBrushes[k], j * size_x, i * size_y, size_x, size_y);
+                        }
+                    }
+                }
+                if(periodyczne)
+                {
+                    if (von_Nemann_mc)
+                        tablica = s.monte_carlo_von_neumann_periodyczne(tablica, r2, r1);
+                    else
+                        tablica = s.monte_carlo_moor_periodyczne(tablica, r2, r1);
+                }
+                else
+                {
+                    if (von_Nemann_mc)
+                        tablica = s.monte_carlo_von_neumann_absorbujace(tablica, r2, r1);
+                    else
+                        tablica = s.monte_carlo_moor_absorbujace(tablica, r2, r1);
+                }
+                //tablica = s.gra(tablica, r2, r1);
+                pictureBox1.Image = DrawArea;
+                mon.Dispose();
             }
         }
     }

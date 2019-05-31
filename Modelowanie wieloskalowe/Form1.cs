@@ -2503,6 +2503,27 @@ namespace Modelowanie_wieloskalowe
         private void button9_Click(object sender, EventArgs e)
         {
             mc = false;
+           
+        }
+
+        private void button10_Click(object sender, EventArgs e)
+        {
+            mc = true;
+            if (mc)
+            {
+                Thread th = new Thread(nowy_watek);
+                th.Start();
+            }
+        }
+
+        private void checkBox5_CheckedChanged(object sender, EventArgs e)
+        {
+            //mikrostruktura
+        }
+
+        private void checkBox6_CheckedChanged(object sender, EventArgs e)
+        {
+            //energia
         }
 
         private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)

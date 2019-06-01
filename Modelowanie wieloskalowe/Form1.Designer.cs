@@ -55,7 +55,6 @@
             this.checkBox3 = new System.Windows.Forms.CheckBox();
             this.checkBox4 = new System.Windows.Forms.CheckBox();
             this.button9 = new System.Windows.Forms.Button();
-            this.checkBox5 = new System.Windows.Forms.CheckBox();
             this.button10 = new System.Windows.Forms.Button();
             this.checkBox6 = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -317,17 +316,6 @@
             this.button9.UseVisualStyleBackColor = true;
             this.button9.Click += new System.EventHandler(this.button9_Click);
             // 
-            // checkBox5
-            // 
-            this.checkBox5.AutoSize = true;
-            this.checkBox5.Location = new System.Drawing.Point(14, 556);
-            this.checkBox5.Name = "checkBox5";
-            this.checkBox5.Size = new System.Drawing.Size(92, 17);
-            this.checkBox5.TabIndex = 27;
-            this.checkBox5.Text = "mikrostruktura";
-            this.checkBox5.UseVisualStyleBackColor = true;
-            this.checkBox5.CheckedChanged += new System.EventHandler(this.checkBox5_CheckedChanged);
-            // 
             // button10
             // 
             this.button10.Location = new System.Drawing.Point(172, 529);
@@ -341,7 +329,7 @@
             // checkBox6
             // 
             this.checkBox6.AutoSize = true;
-            this.checkBox6.Location = new System.Drawing.Point(112, 556);
+            this.checkBox6.Location = new System.Drawing.Point(75, 555);
             this.checkBox6.Name = "checkBox6";
             this.checkBox6.Size = new System.Drawing.Size(61, 17);
             this.checkBox6.TabIndex = 29;
@@ -356,7 +344,6 @@
             this.ClientSize = new System.Drawing.Size(891, 634);
             this.Controls.Add(this.checkBox6);
             this.Controls.Add(this.button10);
-            this.Controls.Add(this.checkBox5);
             this.Controls.Add(this.button9);
             this.Controls.Add(this.checkBox4);
             this.Controls.Add(this.checkBox3);
@@ -422,7 +409,6 @@
         private System.Windows.Forms.CheckBox checkBox3;
         private System.Windows.Forms.CheckBox checkBox4;
         private System.Windows.Forms.Button button9;
-        private System.Windows.Forms.CheckBox checkBox5;
         private System.Windows.Forms.Button button10;
         private System.Windows.Forms.CheckBox checkBox6;
     }

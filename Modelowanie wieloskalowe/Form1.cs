@@ -20,6 +20,7 @@ namespace Modelowanie_wieloskalowe
     {
 
         int[,] tablica;
+        int[,] poprzednia_tablica;
         int val = 1;
         private Graphics g;
         Bitmap DrawArea;
@@ -45,6 +46,11 @@ namespace Modelowanie_wieloskalowe
         bool heksagonalne_lewe;
         bool heksagonalne_losowe;
         bool promien;
+        bool mikrostruktura;
+        bool energia;
+        public int[,] tablica_energii;
+        SolidBrush czarny = new SolidBrush(Color.Black);
+        SolidBrush bialy = new SolidBrush(Color.White);
         Random random = new Random();
         SolidBrush blackBrush = new SolidBrush(Color.Black);
         SolidBrush whiteBrush = new SolidBrush(Color.White);
@@ -2374,6 +2380,7 @@ namespace Modelowanie_wieloskalowe
                         tab[i, j] = tab[i, j];
                     else
                         tab[i, j] = poprzedni_kolor;
+                    
                           
 
                     tablica_punktow[x] = tablica_punktow[ilosc_punktow - 1];
@@ -3208,6 +3215,14 @@ namespace Modelowanie_wieloskalowe
 
         private void button8_Click(object sender, EventArgs e)
         {
+            tablica_energii = new int[r2, r1];
+            for (int i = 0; i < r2; i++)
+                for (int j = 0; j < r1; j++)
+                    tablica_energii[i, j] = 0;
+            poprzednia_tablica = new int[r2, r1];
+            for (int i = 0; i < r2; i++)
+                for (int j = 0; j < r1; j++)
+                    poprzednia_tablica[i, j] = 0;
             mc = true;
             if (mc)
             {
@@ -3249,14 +3264,28 @@ namespace Modelowanie_wieloskalowe
             }
         }
 
-        private void checkBox5_CheckedChanged(object sender, EventArgs e)
-        {
-            //mikrostruktura
-        }
-
         private void checkBox6_CheckedChanged(object sender, EventArgs e)
         {
             //energia
+            mikrostruktura = false;
+            energia = true;
+            mc = false;
+            Graphics grap;
+            grap = Graphics.FromImage(DrawArea);
+            for(int i=0; i<r2; i++)
+            {
+                for(int j=0; j<r1; j++)
+                {
+                    if(tablica_energii[i,j] == 0)
+                        grap.FillRectangle(bialy, j * size_x, i * size_y, size_x, size_y);
+                    else
+                        grap.FillRectangle(czarny, j * size_x, i * size_y, size_x, size_y);
+                }
+            }
+            pictureBox1.Image = DrawArea;
+            grap.Dispose();
+
+
         }
 
         private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)
@@ -3513,6 +3542,9 @@ namespace Modelowanie_wieloskalowe
         public void rysuj_monte_carlo()
         {
             pobierz_dane();
+            for (int c = 0; c < r2; c++)
+                for (int v = 0; v < r1; v++)
+                    poprzednia_tablica[c, v] = tablica[c, v];
             lock (g)
             {
                 Graphics mon;
@@ -3542,7 +3574,14 @@ namespace Modelowanie_wieloskalowe
                     else
                         tablica = s.monte_carlo_moor_absorbujace(tablica, r2, r1);
                 }
-                //tablica = s.gra(tablica, r2, r1);
+                for(int b=0; b<r2; b++)
+                {
+                    for(int z=0; z<r1; z++)
+                    {
+                        if (poprzednia_tablica[b, z] != tablica[b, z])
+                            tablica_energii[b, z] = 1;
+                    }
+                }
                 pictureBox1.Image = DrawArea;
                 mon.Dispose();
             }

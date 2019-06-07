@@ -46,11 +46,13 @@ namespace Modelowanie_wieloskalowe
         bool heksagonalne_lewe;
         bool heksagonalne_losowe;
         bool promien;
-        bool mikrostruktura;
-        bool energia;
+        double[] gestosc_dyslokacji;
+        double krytyczna_dyslokacja;
+        bool zrekrystalizowany;
         public int[,] tablica_energii;
         SolidBrush czarny = new SolidBrush(Color.Black);
         SolidBrush bialy = new SolidBrush(Color.White);
+        SolidBrush zolty = new SolidBrush(Color.Yellow);
         Random random = new Random();
         SolidBrush blackBrush = new SolidBrush(Color.Black);
         SolidBrush whiteBrush = new SolidBrush(Color.White);
@@ -2379,14 +2381,19 @@ namespace Modelowanie_wieloskalowe
                     if (roznica_energii <= 0)
                         tab[i, j] = tab[i, j];
                     else
-                        tab[i, j] = poprzedni_kolor;
+                    {
+                        if(rand.Next(100)  <  (Math.Exp(-((double)roznica_energii)/0.6))*100.0)
+                            tab[i, j] = tab[i, j];
+                        else
+                            tab[i, j] = poprzedni_kolor;
+                    }
+                        
                     
                           
 
                     tablica_punktow[x] = tablica_punktow[ilosc_punktow - 1];
                     ilosc_punktow--;
                 }
-
                 return tab;
             }
 
@@ -2501,7 +2508,12 @@ namespace Modelowanie_wieloskalowe
                     if (roznica_energii <= 0)
                         tab[i, j] = tab[i, j];
                     else
-                        tab[i, j] = poprzedni_kolor;
+                    {
+                        if (rand.Next(100) < (Math.Exp(-((double)roznica_energii) / 0.6)) * 100)
+                            tab[i, j] = tab[i, j];
+                        else
+                            tab[i, j] = poprzedni_kolor;
+                    }
 
 
                     tablica_punktow[x] = tablica_punktow[ilosc_punktow - 1];
@@ -2657,8 +2669,12 @@ namespace Modelowanie_wieloskalowe
                     if (roznica_energii <= 0)
                         tab[i, j] = tab[i, j];
                     else
-                        tab[i, j] = poprzedni_kolor;
-
+                    {
+                        if (rand.Next(100) < (Math.Exp(-((double)roznica_energii) / 0.6)) * 100)
+                            tab[i, j] = tab[i, j];
+                        else
+                            tab[i, j] = poprzedni_kolor;
+                    }
 
                     tablica_punktow[x] = tablica_punktow[ilosc_punktow - 1];
                     ilosc_punktow--;
@@ -2813,7 +2829,12 @@ namespace Modelowanie_wieloskalowe
                     if (roznica_energii <= 0)
                         tab[i, j] = tab[i, j];
                     else
-                        tab[i, j] = poprzedni_kolor;
+                    {
+                        if (rand.Next(100) < (Math.Exp(-((double)roznica_energii) / 0.6)) * 100)
+                            tab[i, j] = tab[i, j];
+                        else
+                            tab[i, j] = poprzedni_kolor;
+                    }
 
 
                     tablica_punktow[x] = tablica_punktow[ilosc_punktow - 1];
@@ -3267,8 +3288,6 @@ namespace Modelowanie_wieloskalowe
         private void checkBox6_CheckedChanged(object sender, EventArgs e)
         {
             //energia
-            mikrostruktura = false;
-            energia = true;
             mc = false;
             Graphics grap;
             grap = Graphics.FromImage(DrawArea);
@@ -3284,6 +3303,101 @@ namespace Modelowanie_wieloskalowe
             }
             pictureBox1.Image = DrawArea;
             grap.Dispose();
+
+
+        }
+
+        private void button11_Click(object sender, EventArgs e)
+        {
+            Random rand = new Random();
+            pobierz_dane();
+            //rekrystalizacja
+            double[,] tablica_dyslokacji = new double[r2, r1];
+            for (int i = 0; i < r2; i++)
+                for (int j = 0; j < r1; j++)
+                    tablica_dyslokacji[i, j] = 0;
+            double[] tablica_ro = new double[r2];
+            gestosc_dyslokacji = new double[r2];
+            double t = 0.0;
+            for (int i = 0; i < r2; i++)
+            {
+                tablica_ro[i] = 0.0;
+                gestosc_dyslokacji[i] = 0.0;
+            }
+            double A = 86710969050178.5;
+            double B = 9.41268203527779;
+            krytyczna_dyslokacja = 4.21584E+12 / (r2 * r1);
+
+            for (int i=0; i<r2; i++)
+            {
+                tablica_ro[i] = A / B + (1 - (A / B)) * (Math.Pow(Math.E, B * (-1) * t));
+                t = t + 0.001;
+            }
+            double[] tablica_deltaRo = new double[r2];
+            for (int i = 0; i < r2; i++)
+                tablica_deltaRo[i] = 0.0;
+            for (int i = 0; i < r2; i++)
+            {
+                if (i == r2 - 1)
+                    tablica_deltaRo[i] = tablica_ro[0] - tablica_ro[i];
+                else
+                    tablica_deltaRo[i] = tablica_ro[i + 1] - tablica_ro[i];
+            }
+            for (int i = 0; i < r2; i++)
+                gestosc_dyslokacji[i] = tablica_deltaRo[i] / (r2 * r1);
+
+            for (int r=0;r<r2; r++)
+                for (int i = 0; i < r2; i++)
+                    for (int j = 0; j < r1; j++)
+                        tablica_dyslokacji[i, j] += gestosc_dyslokacji[r] * 0.7;
+            double[] pozostalo = new double[r2];
+            for (int i = 0; i < r2; i++)
+                pozostalo[i] = tablica_deltaRo[i] * 0.3 / 10.0;
+
+
+            for(int i=0; i<r2; i++)
+            {
+                for (int z = 0; z < 10;)
+                {
+                    int val = rand.Next(100);
+                    int x = rand.Next(r2-1);
+                    int y = rand.Next(r1-1);
+                    if (val < 80 && tablica_energii[x, y] == 1)
+                    {
+                        tablica_dyslokacji[x, y] += pozostalo[i];
+                        z++;
+                    }
+                    else if (val > 80 && tablica_energii[x, y] == 0)
+                    {
+                        tablica_dyslokacji[x, y] += pozostalo[i];
+                        z++;
+                    }
+
+
+
+                }
+            }
+
+
+            
+            
+            Graphics graphh;
+            graphh = Graphics.FromImage(DrawArea);
+            for (int i=0; i<r2; i++)
+            {
+                for(int j=0; j<r1; j++)
+                {
+                    if (tablica_dyslokacji[i, j] > krytyczna_dyslokacja && tablica_energii[i,j]==1)
+                        graphh.FillRectangle(zolty, j * size_x, i * size_y, size_x, size_y);
+                       // MessageBox.Show("xx");
+                   
+
+                }
+            }
+            pictureBox1.Image = DrawArea;
+            graphh.Dispose();
+
+
 
 
         }
